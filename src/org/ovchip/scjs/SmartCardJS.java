@@ -4,6 +4,9 @@ import java.applet.Applet;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import javax.smartcardio.ATR;
 import javax.smartcardio.Card;
 import javax.smartcardio.CardChannel;
@@ -13,8 +16,6 @@ import javax.smartcardio.CardTerminals;
 import javax.smartcardio.CommandAPDU;
 import javax.smartcardio.ResponseAPDU;
 import javax.smartcardio.TerminalFactory;
-import javax.swing.SwingUtilities;
-import javax.swing.event.EventListenerList;
 
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
@@ -23,8 +24,29 @@ public class SmartCardJS extends Applet {
    
     private static final long serialVersionUID = -4855017287165883462L;
 
-    //Collection<Slot> listeners;
-    String jsSignalHandler = "signalHandler";
+    public static final int ERROR = 1;
+    public static final int WARNING = 2;
+    public static final int LOG = 4;
+    public static final int DEBUG = 8;
+    public static final int TRACE_APDU = 16;
+    public static final int TRACE_CALL = 32;
+
+    /**
+     * 
+     */
+    private static int outputLevel = ERROR | WARNING | LOG;    
+    
+    /**
+     * JavaScript object which will handle signals emitted by the applet.
+     */
+    private String jsSignalHandler = "signalHandler";
+    
+    /**
+     * Java object which will handle signals emitted by the applet.
+     */
+    private SignalHandler javaSignalHandler = new SignalHandler();
+    
+    private ExecutorService executorService = Executors.newCachedThreadPool();
     
     // Return values for JavaScript calls
     boolean CardIsPresent;
@@ -38,45 +60,120 @@ public class SmartCardJS extends Applet {
     Card card;    
     CardPoller cardPoller;
     CardTerminal workingReader;
-    Thread cardPollerThread;
+    Thread cardPollerThread = null;
     JSObject jso;
 
     public SmartCardJS() {
-        //listeners = new HashSet<Slot>();
-        cardPollerThread = null;
+        String parameter;
+        // Set up the level of generated output
+        parameter = getParameter("outputLevel");
+        if (parameter != null) {
+            outputLevel = Integer.parseInt(parameter);
+        }
+        
+        // Set up Java Script signal handling
+        parameter = getParameter("jsSignalHandler");
+        if (parameter != null) {
+            jsSignalHandler = parameter;
+        }
+        
+        emit(new Signal(this, "appletConstructed"));
     }
 
+    public int getOutputLevel() {
+        traceCall("getOutputLevel()");
+        
+        return outputLevel;
+    }
+    
+    public void setOutputLevel(int level) {
+        traceCall("setOutputLevel(" + level + ")");
+        
+        outputLevel = level;
+    }
+    
+    public String getJSSignalHandler() {
+        traceCall("getJSSignalHandler()");
+        
+        return jsSignalHandler;
+    }
+    
+    public void setJSSignalHandler(String handler) {
+        traceCall("setJSSignalHandler()");
+        
+        jsSignalHandler = handler;
+    }
+    
     public void init() {
+        traceCall("init()");
+        
         try {
             jso = JSObject.getWindow(this);
         } catch(JSException e) {
             e.printStackTrace();
         }
+        
         emit(new Signal(this, "appletInitialised"));
     }
 
     public void start() {
+        traceCall("start()");
+        
         emit(new Signal(this, "appletStarted"));
     }
     
     public void stop() {
+        traceCall("stop()");
+        
         killThread();
-        if (jso != null) jso.call("appletStopped", new String[0]);
+        
+        executorService.shutdown();
+        
+        emit(new Signal(this, "appletStopped"));
     }
 
     public void destroy() {
-        if (jso != null) jso.call("appletDestroyed", new String[0]);    
+        traceCall("destroy()");
+        
+        emit(new Signal(this, "appletDestroyed"));    
     }
     
-    public void emit(Signal signal) {
-        if (jso != null) {
-            ((JSObject) jso.getMember(jsSignalHandler)).call("handle", new Object[]{signal});
+    public void emit(final Signal signal) {
+        traceCall("emit(" + signal + ")");
+        
+        executorService.execute(new Runnable() {
+            public void run() { 
+                emitJava(signal);
+            }
+        });
+        
+        executorService.execute(new Runnable() {
+            public void run() {
+                emitJS(signal);
+            }
+        });
+    }
+    
+    public void emitJava(Signal signal) {
+        traceCall("emitJava(" + signal + ")");
+        
+        try {
+            javaSignalHandler.handle(signal);
+        } catch (Exception e) {
+            warning("Failed to emit " + signal + " due to a JSException: " + e.getMessage());
         }
-        /*for (final Slot listener : listeners) {
-            listener.capture(signal);
-        }*/
     }
     
+    public void emitJS(Signal signal) {
+        traceCall("emitJS(" + signal + ")");
+        
+        try {
+            ((JSObject) jso.getMember(jsSignalHandler)).call("handle", new Object[]{signal});
+        } catch (JSException e) {
+            warning("Failed to emit " + signal + " due to a JSException: " + e.getMessage());
+        }
+    }
+        
     public void killThread() {
         if(cardPollerThread != null && cardPollerThread.isAlive()) {
             Thread t = cardPollerThread;
@@ -340,7 +437,6 @@ public class SmartCardJS extends Applet {
         private static final long POLL_INTERVAL = 250;
         
         CardTerminal terminal;
-        EventListenerList listenerList = new EventListenerList();
         boolean pollType = POLL_FOR_PRESENT;
         long pollInterval = POLL_INTERVAL;
 
@@ -367,21 +463,60 @@ public class SmartCardJS extends Applet {
                 }
                 
                 if (pollType == POLL_FOR_PRESENT) {
-                    SwingUtilities.invokeLater(new Runnable() {
+                    executorService.execute(new Runnable() {
                         public void run() {
                             cardPresent();
                         }
                     });
                 } else { // pollType == POLL_FOR_ABSENT
-                    SwingUtilities.invokeLater(new Runnable() {
+                    executorService.execute(new Runnable() {
                         public void run() {
                             cardAbsent();
                         }
                     });
                 }
             } catch(CardException ce) { 
-//            } catch(InterruptedException ie) {
             }
+        }
+    }
+
+    /*
+     * Output functionality
+     */
+    
+    public void log(String message) {
+        if ((outputLevel & LOG) != 0) {
+            showStatus("[LOG] " + message);
+        }
+    }
+    
+    public void warning(String message) {
+        if ((outputLevel & WARNING) != 0) {
+            showStatus("[WARNING] " + message);
+        }
+    }
+
+    public void error(String message) {
+        if ((outputLevel & ERROR) != 0) {
+            showStatus("[ERROR] " + message);
+        }
+    }
+
+    public void debug(String message) {
+        if ((outputLevel & DEBUG) != 0) {
+            showStatus("[DEBUG] " + message);
+        }
+    }
+
+    public void traceAPDU(String message) {
+        if ((outputLevel & TRACE_APDU) != 0) {
+            showStatus("[APDU] " + message);
+        }
+    }
+    
+    public void traceCall(String message) {
+        if ((outputLevel & TRACE_CALL) != 0) {
+            showStatus("[CALL] " + message);
         }
     }
 }
