@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head> 
+    <title>PC/SC Applet</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" href="styles/example.css" title="Default" media="screen" />
+    <script src="scripts/example.js" lang="JavaScript" type="text/javascript"></script>
+</head>
+
+<body onload="javascript:RefreshReadersList();">
+  <div id="logo">
+    <h1>SmartCardJS: browser-based smart card interaction</h1>
+  </div>
+
+  <object classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93" height="200" width="450">
+    <param name="code" value="org.ovchip.SmartCardJS.class" />
+    <param name="archive" value="smartcardjs.jar" />
+    <param name="type" value="application/x-java-applet;version=1.6" />
+    <param name="scriptable" value="true" />
+    <param name="mayscript" value="true" />
+    <embed type="application/x-java-applet;version=1.6" hidden="true" code="org.ovchip.SmartCardJS.class" archive="smartcardjs.jar" scriptable="true" mayscript="true" height="200" width="450" />
+  </object>
+    
+  <div id="container">
+    <div id="sidebar">
+      <div id="InfoStart">Select a reader from the list, put a card on the reader then click connect</div>
+      <div id="InfoConnected" style="display: none;">Enter an APDU and click Transmit</div>
+      <div id="InfoPresent" style="display: none;">Card present on the reader, click Connect</div>
+    </div>
+    <div id="main">
+      <form class="list">     
+        <label for="readers">Reader
+          <a href="javascript:RefreshReadersList()" title="Refresh Readers List">
+	    <img src="images/reload.png" height="13" width="16" />
+	  </a>
+        </label>
+          
+        <div id="list"><select class="select" id="readers" onchange="setReader();"></select></div>
+        <hr class="spacer" />
+	
+	<label for="CardState">Card
+          <a href="javascript:RefreshCardState()" title="Refresh Card State">
+	    <img src="images/reload.png" height="13" width="16" />
+	  </a>
+        </label>
+        <input name="CardState" id="CardState" class="text" readonly="readonly" type="text" />
+        
+        <input id="ButConnect" value="Connect" onclick="Connect();" class="send" type="button" />
+        <input id="ButDisconnect" value="Disconnect" style="display: none;" onclick="Disconnect()" class="send" type="button" />
+        <div id="APDU" style="display: none;">
+          <hr class="spacer" />
+	  <label for="lecteur">ADPU</label>
+          <textarea type="text" name="ApduIn" id="ApduIn" class="text"></textarea>
+	  <input value="Transmit" onclick="SendApdu();return true;" class="send" type="button" />
+          
+	  <hr class="spacer" />
+	  <label for="lecteur">Response</label>
+          <textarea type="text" name="ApduOut" id="ApduOut" class="text" readonly="readonly"></textarea>
+        </div>
+      </form>
+    </div>
+    
+    <hr class="spacer">
+  </div>
+    
+  <div id="legend">
+    This applet was developed by the <a href="http://www.ru.nl/ds/">Digital Security</a> group of the <a href="http://www.cs.ru.nl/">Institute for Computing and Information Sciences</a> at the <a href="http://www.ru.nl/">Radboud University Nijmegen</a>. More open source projects can be found on <a href="http://www.ru.nl/ds/research/smartcards/">our smartcards page</a>.
+  </div>
+</body>
+
+</html>

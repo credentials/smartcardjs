@@ -1,0 +1,122 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  color: #FFFFFF;
+  background: #FFFFFF url(../images/bg.jpg);
+  font-family: Georgia, "Times New Roman", Times, serif;
+}
+
+#logo {
+  width: 100%;
+  height: 100px;
+  margin: -20px 0 0 0;
+  background: #F2F2F2;
+  border-bottom: 4px #666666 solid;
+}
+
+#logo h1 {
+  color: #333333;
+  text-align: center;
+  padding: 30px;
+}
+
+#container {
+  width: 840px;
+  margin: 100px auto 0 auto;
+  padding: 30px;
+  background: #EFEFEF;
+  border: 4px #A3C5D0 solid;
+}
+
+#legend {
+  color: #666666;
+  width: 865px;
+  margin: 100px auto 0 auto;
+  padding: 20px;
+  background: #FFFFFF url(../images/bg.jpg);
+  border: 2px #a3c5d0 solid;
+}
+
+#sidebar {
+  float: left;
+  width: 240px;
+  color: #666666;
+  font-size: 13px;
+  line-height:20px;
+}
+
+#main {
+  float: right;
+  width: 560px;
+  margin: 0 0 0 20px;
+}
+
+#main .select {
+  float: left;
+  width: 334px;
+  margin: 0 0 10px 0;
+  background-color: #FFFFFF;
+  border: 1px solid #DDDDDD;
+  color: #333333;
+  font-family: "Microsoft Sans Serif";
+  font-size: 15px;
+  padding: 10px;
+}
+
+#main .text {
+  float: left;
+  width: 310px;
+  margin: 0 0 10px 0;
+  background-color: #FFFFFF;
+  border: 1px solid #DDDDDD;
+  color: #333333;
+  font-family: "Microsoft Sans Serif";
+  font-size: 15px;
+  padding: 11px;
+}
+
+#main .send {
+  float: right; 
+  width: 120px;
+  margin: 0 0 10px 10px;
+  background-color: #C73D3D;
+  border: 1px solid #F74D4D;
+  color: #FFFFFF;
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 9px;
+}
+
+.spacer {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  clear: both;
+}
+  
+label {
+  float: left;
+  margin: 10px 0 0 0;
+  width: 89px;
+  height: 42px;
+  padding: 0 0 0 5px;
+  display: inline-block;
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-weight: bold;
+  font-size: 12px;
+  line-height: 20px;
+  color: #FFFFFF;
+  background: url(../images/legend.png) no-repeat;
+}
+  
+img, img a:active, a:visited, img a {
+  border: 0;
+}
+
+a:link, a:active, a:visited {
+  color: #D9091B;
+  font-weight: bold;
+  text-decoration: none;
+}

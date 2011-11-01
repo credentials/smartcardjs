@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project name="SmartCardJS" default="signedjar">
+
+  <property file="build.properties" />
+
+  <path id="classpath">
+    <pathelement path="${java.home}/lib/plugin.jar" />
+  </path>
+
+  <target name="clean">
+    <delete dir="${bin.dir}" />
+    <delete dir="${jar.dir}" includes="*.jar" />
+  </target>
+
+  <target name="compile">
+    <mkdir dir="${bin.dir}" />
+    <javac srcdir="${src.dir}" destdir="${bin.dir}" includeantruntime="false">
+       <classpath refid="classpath" />
+    </javac>
+  </target>
+
+  <target name="signedjar" depends="compile">
+    <jar destfile="${jar.dir}/${jar.applet}">
+      <fileset dir="${bin.dir}" />
+      <fileset dir="${src.dir}" />
+    </jar>
+
+    <signjar jar="${jar.dir}/${jar.applet}" alias="${key.alias}" storepass="${key.storepass}" keystore="${key.store}" />
+  </target>
+
+  <target name="unsignedjar" depends="compile">
+    <jar destfile="${jar.dir}/${jar.applet}">
+      <fileset dir="${bin.dir}" />
+      <fileset dir="${src.dir}" />
+    </jar>
+  </target>
+</project>
+
