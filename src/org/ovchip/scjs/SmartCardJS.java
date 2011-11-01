@@ -1,9 +1,9 @@
 package org.ovchip.scjs;
 
+import java.applet.Applet;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-
 import javax.smartcardio.ATR;
 import javax.smartcardio.Card;
 import javax.smartcardio.CardChannel;
@@ -13,15 +13,18 @@ import javax.smartcardio.CardTerminals;
 import javax.smartcardio.CommandAPDU;
 import javax.smartcardio.ResponseAPDU;
 import javax.smartcardio.TerminalFactory;
-import javax.swing.JApplet;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
 
-public class SmartCardJS extends JApplet {
-    private static final long serialVersionUID = -1L;
+public class SmartCardJS extends Applet {
+   
+    private static final long serialVersionUID = -4855017287165883462L;
+
+    //Collection<Slot> listeners;
+    String jsSignalHandler = "signalHandler";
     
     // Return values for JavaScript calls
     boolean CardIsPresent;
@@ -39,6 +42,7 @@ public class SmartCardJS extends JApplet {
     JSObject jso;
 
     public SmartCardJS() {
+        //listeners = new HashSet<Slot>();
         cardPollerThread = null;
     }
 
@@ -48,12 +52,31 @@ public class SmartCardJS extends JApplet {
         } catch(JSException e) {
             e.printStackTrace();
         }
+        emit(new Signal(this, "appletInitialised"));
     }
 
+    public void start() {
+        emit(new Signal(this, "appletStarted"));
+    }
+    
     public void stop() {
         killThread();
+        if (jso != null) jso.call("appletStopped", new String[0]);
     }
 
+    public void destroy() {
+        if (jso != null) jso.call("appletDestroyed", new String[0]);    
+    }
+    
+    public void emit(Signal signal) {
+        if (jso != null) {
+            ((JSObject) jso.getMember(jsSignalHandler)).call("handle", new Object[]{signal});
+        }
+        /*for (final Slot listener : listeners) {
+            listener.capture(signal);
+        }*/
+    }
+    
     public void killThread() {
         if(cardPollerThread != null && cardPollerThread.isAlive()) {
             Thread t = cardPollerThread;

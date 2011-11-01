@@ -4,14 +4,19 @@
 <head>
   <title>Smart Card-JavaScript Bridge</title>
   <script src="http://www.java.com/js/deployJava.js"></script>
+  <script src="scripts/jquery/jquery.js"></script>
+  <script src="scripts/signalhandler.js"></script>
 </head>
 
 <body>
   <h1>Smart Card-JavaScript Bridge</h1>
 
-  <script> 
-    var attributes = { code:'org.ovchip.scjs.SmartCardJS', width:1, height:1 }; 
-    var parameters = { jnlp_href: 'dynamictree-applet.jnlp' };
+  <script>
+    var signalHandler = new SignalHandler();
+
+    var attributes = { id: 'SmartCardJS', code:'org.ovchip.scjs.SmartCardJS', 
+    		width:1, height:1 }; 
+    var parameters = { jnlp_href: 'smartcardjs.jnlp' };
     deployJava.runApplet(attributes, parameters, '1.6'); 
   </script>
 </body>
