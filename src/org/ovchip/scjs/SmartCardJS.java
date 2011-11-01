@@ -1,4 +1,4 @@
-package org.ovchip;
+package org.ovchip.scjs;
 
 import java.security.AccessController;
 import java.security.PrivilegedActionException;

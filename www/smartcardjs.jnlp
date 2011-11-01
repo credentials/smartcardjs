@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="" href="">
+  <information>
+    <title>Smart Card JavaScript Bridge</title>
+    <vendor>Pim Vullers</vendor>
+  </information>
+
+  <resources>
+    <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
+    <jar href="smartcardjs.jar" main="true" />
+  </resources>
+
+  <applet-desc name="Smart Card JavaScript Bridge" 
+    main-class="org.ovchip.scjs.SmartCardJS" width="1" height="1">
+  </applet-desc>
+
+  <update check="background"/>
+</jnlp>
+

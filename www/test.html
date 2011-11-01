@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html>
+
+<head>
+  <title>Smart Card-JavaScript Bridge</title>
+  <script src="http://www.java.com/js/deployJava.js"></script>
+</head>
+
+<body>
+  <h1>Smart Card-JavaScript Bridge</h1>
+
+  <script> 
+    var attributes = { code:'org.ovchip.scjs.SmartCardJS', width:1, height:1 }; 
+    var parameters = { jnlp_href: 'dynamictree-applet.jnlp' };
+    deployJava.runApplet(attributes, parameters, '1.6'); 
+  </script>
+</body>
+
+</html>
+
