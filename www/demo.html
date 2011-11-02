@@ -5,7 +5,7 @@
   <title>Smart Card-JavaScript Bridge</title>
 
   <!-- Java deployment toolkit -->
-  <script src="scripts/deployJava.js" type="text/javascript"></script>
+  <script src="scripts/lib/deployJava.min.js" type="text/javascript"></script>
   <script type="text/javascript">
     function deploySmartCardJS() {
       var attributes = {
@@ -24,9 +24,9 @@
   </script>
   
   <!-- jQuery user interface -->
-  <script src="scripts/jquery.js" type="text/javascript"></script>
-  <script src="scripts/jquery-ui.js" type="text/javascript"></script>
-  <link href="styles/jquery-ui.css" rel="stylesheet" type="text/css" />
+  <script src="scripts/lib/jquery.min.js" type="text/javascript"></script>
+  <script src="scripts/lib/jquery-ui.min.js" type="text/javascript"></script>
+  <link href="styles/lib/jquery-ui.css" rel="stylesheet" type="text/css" />
 
   <!-- Smart Card-JavaScript bridge -->
   <script src="scripts/signalhandler.js" type="text/javascript"></script>
@@ -56,11 +56,9 @@
 
   <script>
     var signalHandler = new SignalHandler();
-
   </script>
-  <a href="#" onClick="javascript:(new StatusCheck()).prepareLogin();">click</a>
-  
   <button type="button" onclick="javascript:deploySmartCardJS()">Deploy</button>
+  <button type="button" onclick="javascript:(new StatusCheck()).prepareLogin()">Check</button>
 </body>
 
 </html>
