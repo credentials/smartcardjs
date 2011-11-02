@@ -24,18 +24,11 @@ public class SmartCardJS extends Applet {
    
     private static final long serialVersionUID = -4855017287165883462L;
 
-    public static final int ERROR = 1;
-    public static final int WARNING = 2;
-    public static final int LOG = 4;
-    public static final int DEBUG = 8;
-    public static final int TRACE_APDU = 16;
-    public static final int TRACE_CALL = 32;
-
     /**
-     * 
+     * JavaScript communication object.
      */
-    private static int outputLevel = ERROR | WARNING | LOG;    
-    
+    private JSObject jso;
+
     /**
      * JavaScript object which will handle signals emitted by the applet.
      */
@@ -46,8 +39,17 @@ public class SmartCardJS extends Applet {
      */
     private SignalHandler javaSignalHandler = new SignalHandler();
     
+    /**
+     * Execution service to handle events asynchronously.
+     */
     private ExecutorService executorService = Executors.newCachedThreadPool();
-    
+
+    /**
+     * Console object to handle the output behavior.
+     */
+    private Console console;
+
+
     // Return values for JavaScript calls
     boolean CardIsPresent;
     int NbReaders;
@@ -61,15 +63,13 @@ public class SmartCardJS extends Applet {
     CardPoller cardPoller;
     CardTerminal workingReader;
     Thread cardPollerThread = null;
-    JSObject jso;
 
+    /*
+     * Applet life cycle functionality
+     */
+    
     public SmartCardJS() {
         String parameter;
-        // Set up the level of generated output
-        parameter = getParameter("outputLevel");
-        if (parameter != null) {
-            outputLevel = Integer.parseInt(parameter);
-        }
         
         // Set up Java Script signal handling
         parameter = getParameter("jsSignalHandler");
@@ -77,35 +77,13 @@ public class SmartCardJS extends Applet {
             jsSignalHandler = parameter;
         }
         
+        console = new Console(this);
+        
         emit(new Signal(this, "appletConstructed"));
     }
 
-    public int getOutputLevel() {
-        traceCall("getOutputLevel()");
-        
-        return outputLevel;
-    }
-    
-    public void setOutputLevel(int level) {
-        traceCall("setOutputLevel(" + level + ")");
-        
-        outputLevel = level;
-    }
-    
-    public String getJSSignalHandler() {
-        traceCall("getJSSignalHandler()");
-        
-        return jsSignalHandler;
-    }
-    
-    public void setJSSignalHandler(String handler) {
-        traceCall("setJSSignalHandler()");
-        
-        jsSignalHandler = handler;
-    }
-    
     public void init() {
-        traceCall("init()");
+        console.traceCall("init()");
         
         try {
             jso = JSObject.getWindow(this);
@@ -117,13 +95,13 @@ public class SmartCardJS extends Applet {
     }
 
     public void start() {
-        traceCall("start()");
+        console.traceCall("start()");
         
         emit(new Signal(this, "appletStarted"));
     }
     
     public void stop() {
-        traceCall("stop()");
+        console.traceCall("stop()");
         
         killThread();
         
@@ -133,13 +111,45 @@ public class SmartCardJS extends Applet {
     }
 
     public void destroy() {
-        traceCall("destroy()");
+        console.traceCall("destroy()");
         
         emit(new Signal(this, "appletDestroyed"));    
     }
     
+    /*
+     * Setters and getters for parameters
+     */
+    
+    public int getOutputLevel() {
+        console.traceCall("getOutputLevel()");
+        
+        return console.getOutputLevel();
+    }
+    
+    public void setOutputLevel(int level) {
+        console.traceCall("setOutputLevel(" + level + ")");
+        
+        console.setOutputLevel(level);
+    }
+    
+    public String getJSSignalHandler() {
+        console.traceCall("getJSSignalHandler()");
+        
+        return jsSignalHandler;
+    }
+    
+    public void setJSSignalHandler(String handler) {
+        console.traceCall("setJSSignalHandler()");
+        
+        jsSignalHandler = handler;
+    }
+    
+    /*
+     * Signal handling 
+     */
+    
     public void emit(final Signal signal) {
-        traceCall("emit(" + signal + ")");
+        console.traceCall("emit(" + signal + ")");
         
         executorService.execute(new Runnable() {
             public void run() { 
@@ -155,25 +165,29 @@ public class SmartCardJS extends Applet {
     }
     
     public void emitJava(Signal signal) {
-        traceCall("emitJava(" + signal + ")");
+        console.traceCall("emitJava(" + signal + ")");
         
         try {
             javaSignalHandler.handle(signal);
         } catch (Exception e) {
-            warning("Failed to emit " + signal + " due to a JSException: " + e.getMessage());
+            console.warning("Failed to emit " + signal + " due to a JSException: " + e.getMessage());
         }
     }
     
     public void emitJS(Signal signal) {
-        traceCall("emitJS(" + signal + ")");
+        console.traceCall("emitJS(" + signal + ")");
         
         try {
             ((JSObject) jso.getMember(jsSignalHandler)).call("handle", new Object[]{signal});
         } catch (JSException e) {
-            warning("Failed to emit " + signal + " due to a JSException: " + e.getMessage());
+            console.warning("Failed to emit " + signal + " due to a JSException: " + e.getMessage());
         }
     }
-        
+      
+    /*
+     * Old smart card stuff 
+     */
+    
     public void killThread() {
         if(cardPollerThread != null && cardPollerThread.isAlive()) {
             Thread t = cardPollerThread;
@@ -480,43 +494,5 @@ public class SmartCardJS extends Applet {
         }
     }
 
-    /*
-     * Output functionality
-     */
-    
-    public void log(String message) {
-        if ((outputLevel & LOG) != 0) {
-            showStatus("[LOG] " + message);
-        }
-    }
-    
-    public void warning(String message) {
-        if ((outputLevel & WARNING) != 0) {
-            showStatus("[WARNING] " + message);
-        }
-    }
 
-    public void error(String message) {
-        if ((outputLevel & ERROR) != 0) {
-            showStatus("[ERROR] " + message);
-        }
-    }
-
-    public void debug(String message) {
-        if ((outputLevel & DEBUG) != 0) {
-            showStatus("[DEBUG] " + message);
-        }
-    }
-
-    public void traceAPDU(String message) {
-        if ((outputLevel & TRACE_APDU) != 0) {
-            showStatus("[APDU] " + message);
-        }
-    }
-    
-    public void traceCall(String message) {
-        if ((outputLevel & TRACE_CALL) != 0) {
-            showStatus("[CALL] " + message);
-        }
-    }
 }
