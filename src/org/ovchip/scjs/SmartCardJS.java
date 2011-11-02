@@ -27,7 +27,7 @@ public class SmartCardJS extends Applet {
     /**
      * JavaScript communication object.
      */
-    private JSObject jso;
+    private JSObject js;
 
     /**
      * JavaScript object which will handle signals emitted by the applet.
@@ -64,9 +64,9 @@ public class SmartCardJS extends Applet {
     CardTerminal workingReader;
     Thread cardPollerThread = null;
 
-    /*
-     * Applet life cycle functionality
-     */
+    /*************************************************************************
+     *** Applet life cycle functionality                                   ***
+     *************************************************************************/
     
     public SmartCardJS() {
         String parameter;
@@ -86,7 +86,7 @@ public class SmartCardJS extends Applet {
         console.traceCall("init()");
         
         try {
-            jso = JSObject.getWindow(this);
+            js = JSObject.getWindow(this);
         } catch(JSException e) {
             e.printStackTrace();
         }
@@ -116,20 +116,32 @@ public class SmartCardJS extends Applet {
         emit(new Signal(this, "appletDestroyed"));    
     }
     
-    /*
-     * Setters and getters for parameters
-     */
+    /*************************************************************************
+     *** Setters and getters for parameters                                ***
+     *************************************************************************/
     
-    public int getOutputLevel() {
-        console.traceCall("getOutputLevel()");
+    public String getOutputFilter() {
+        console.traceCall("getOutputFilter()");
         
-        return console.getOutputLevel();
+        return console.getOutputFilter();
     }
     
-    public void setOutputLevel(int level) {
-        console.traceCall("setOutputLevel(" + level + ")");
+    public void setOutputFilter(String filter) {
+        console.traceCall("setOutputFilter(" + filter + ")");
         
-        console.setOutputLevel(level);
+        console.setOutputFilter(filter);
+    }
+    
+    public void addOutputLevel(String level) {
+        console.traceCall("addOutputLevel(" + level + ")");
+        
+        console.addOutputLevel(level);
+    }
+    
+    public void removeOutputLevel(String level) {
+        console.traceCall("removeOutputLevel(" + level + ")");
+        
+        console.removeOutputLevel(level);
     }
     
     public String getJSSignalHandler() {
@@ -144,43 +156,46 @@ public class SmartCardJS extends Applet {
         jsSignalHandler = handler;
     }
     
-    /*
-     * Signal handling 
-     */
+    /*************************************************************************
+     *** Signal handling                                                   ***
+     *************************************************************************/
     
     public void emit(final Signal signal) {
         console.traceCall("emit(" + signal + ")");
         
         executorService.execute(new Runnable() {
             public void run() { 
-                emitJava(signal);
+                jEmit(signal);
             }
         });
         
         executorService.execute(new Runnable() {
             public void run() {
-                emitJS(signal);
+                jsEmit(signal);
             }
         });
     }
     
-    public void emitJava(Signal signal) {
-        console.traceCall("emitJava(" + signal + ")");
+    public void jEmit(Signal signal) {
+        console.traceCall("jEmit(" + signal + ")");
         
         try {
             javaSignalHandler.handle(signal);
         } catch (Exception e) {
-            console.warning("Failed to emit " + signal + " due to a JSException: " + e.getMessage());
+            console.warning("Failed to emit " + signal + 
+                    " due to an Exception: " + e.getMessage());
         }
     }
     
-    public void emitJS(Signal signal) {
-        console.traceCall("emitJS(" + signal + ")");
+    public void jsEmit(Signal signal) {
+        console.traceCall("jsEmit(" + signal + ")");
         
         try {
-            ((JSObject) jso.getMember(jsSignalHandler)).call("handle", new Object[]{signal});
+            ((JSObject) js.getMember(jsSignalHandler)).call(
+                    "handle", new Object[]{signal});
         } catch (JSException e) {
-            console.warning("Failed to emit " + signal + " due to a JSException: " + e.getMessage());
+            console.warning("Failed to emit " + signal + 
+                    " due to a JSException: " + e.getMessage());
         }
     }
       
@@ -197,7 +212,7 @@ public class SmartCardJS extends Applet {
     }
     
     public void cardPresent() {
-        jso.call("RefreshCardState", new String[0]);
+        js.call("RefreshCardState", new String[0]);
         killThread();
         
         try {
@@ -210,7 +225,7 @@ public class SmartCardJS extends Applet {
     }
 
     public void cardAbsent() {
-        jso.call("RefreshCardState", new String[0]);
+        js.call("RefreshCardState", new String[0]);
         killThread();
         
         try {
