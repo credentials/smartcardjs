@@ -1,5 +1,4 @@
 function SimpleDialog() {
-	var a = this;
 	this.width = 870;
 	this.folder = "/static/";
 	this.position = "center";
@@ -19,7 +18,6 @@ function SimpleDialog() {
 		this.renderDialog()
 	};
 	this.renderDialog = function() {
-		var b = this;
 		$(".ui-widget-overlay").height(0);
 		$("#simpleDialog").dialog({
 			modal : true,
@@ -28,11 +26,11 @@ function SimpleDialog() {
 			width : this.width,
 			buttons : this.loadButtons(),
 			dialogClass : this.dialogClass,
-			close : function(d, e) { b.onClose(d, e) },
-			open : function(d, e) {	b.onOpen(d, e) },
-			focus : function(d, e) { b.onFocus(d, e) }
+			close : function(d, e) { this.onClose(d, e) },
+			open : function(d, e) {	this.onOpen(d, e) },
+			focus : function(d, e) { this.onFocus(d, e) }
 		});
-		window.setTimeout(function() { a.adjustOverlaySize() }, 100)
+		window.setTimeout(function() { this.adjustOverlaySize() }, 100)
 	};
 	this.adjustOverlaySize = function() {
 		$(document).height() > $(".ui-widget-overlay").height()
@@ -71,25 +69,25 @@ function SimpleDialog() {
 		}
 	};
 	this.loadButtons = function() {
-		return this.historyList.length < 2 ? a.loadButtonsOk() : 
-			a.loadButtonsOkBack()
+		return this.historyList.length < 2 ? this.loadButtonsOk() : 
+			this.loadButtonsOkBack()
 	};
 	this.setWidth = function(width) { this.width = width };
 	this.setPosition = function(position) { this.position = position };
 	this.setDialogClass = function(dialogClass) { this.dialogClass = dialogClass };
 	this.onOpen = function() {};
 	this.onFocus = function() {};
-	this.onClose = function() {	a.clearHistory() };
+	this.onClose = function() {	this.clearHistory() };
 	this.bindLinks = function() {
 		$("#simpleDialog").unbind("click");
 		$("#simpleDialog").bind("click", function(b) {
 			b = b.target.id;
-			if (a.isChildLink(b)) {
+			if (this.isChildLink(b)) {
 				b = b.match(/(.*)_link/);
-				a.show(b[1]);
+				this.show(b[1]);
 				return false
 			}
-			if (a.isFunctionLink(b)) {
+			if (this.isFunctionLink(b)) {
 				b = b.match(/(.*)_internal/);
 				$(this).dialog("close");
 				window[b[1]]();
