@@ -1,7 +1,8 @@
-function OwokStatusCheck() {
-	if (OwokStatusCheck.instance !== undefined)
-		return OwokStatusCheck.instance;
-	OwokStatusCheck.instance = this;
+
+function StatusCheck() {
+	if (StatusCheck.instance !== undefined)
+		return StatusCheck.instance;
+	StatusCheck.instance = this;
 	var a = this, b = null, d, e;
 	this.prepareLogin = function() {
 		a.showDialog();
@@ -19,88 +20,88 @@ function OwokStatusCheck() {
 		a.resetOwok()
 	};
 	this.showDialog = function() {
-		b = new OwokStatusCheckView;
+		b = new StatusCheckView;
 		b.showDialog()
 	};
 	this.bindEventsWithCallback = function(l, m) {
-		OWOKPlugin.disableEvents();
+//		OWOKPlugin.disableEvents();
 		a.unbindLoginEvents();
 		a.bindStatusEvents();
 		d = l;
 		e = m;
 		this.unbindEventsWithCallback();
-		$(OWOKPlugin).bind("owokLightCardWasInserted", d);
-		$(OWOKPlugin).bind("owokSmartcardWasInserted", e)
+//		$(OWOKPlugin).bind("owokLightCardWasInserted", d);
+//		$(OWOKPlugin).bind("owokSmartcardWasInserted", e)
 	};
 	this.unbindEventsWithCallback = function() {
-		$(OWOKPlugin).unbind("owokLightCardWasInserted", d);
-		$(OWOKPlugin).unbind("owokSmartcardWasInserted", e)
+//		$(OWOKPlugin).unbind("owokLightCardWasInserted", d);
+//		$(OWOKPlugin).unbind("owokSmartcardWasInserted", e)
 	};
 	this.bindLoginEvents = function() {
-		OWOKPlugin.disableEvents();
+//		OWOKPlugin.disableEvents();
 		a.unbindLoginEvents();
 		a.bindStatusEvents();
-		$(OWOKPlugin).bind("owokLightCardWasInserted",
-				a.executeLoginWithOwokLight);
-		$(OWOKPlugin).bind("owokSmartcardWasInserted", a.executeLoginWithOwok)
+//		$(OWOKPlugin).bind("owokLightCardWasInserted",
+//				a.executeLoginWithOwokLight);
+//		$(OWOKPlugin).bind("owokSmartcardWasInserted", a.executeLoginWithOwok)
 	};
 	this.bindAddCardEvents = function() {
-		OWOKPlugin.disableEvents();
+//		OWOKPlugin.disableEvents();
 		a.unbindAddCardEvents();
 		a.bindStatusEvents();
-		$(OWOKPlugin).bind("owokLightCardWasInserted",
-				a.executeAddCardOwokLight);
-		$(OWOKPlugin).bind("owokSmartcardWasInserted", a.executeAddCardOwok)
+//		$(OWOKPlugin).bind("owokLightCardWasInserted",
+//				a.executeAddCardOwokLight);
+//		$(OWOKPlugin).bind("owokSmartcardWasInserted", a.executeAddCardOwok)
 	};
 	this.bindDisconnectCardEvents = function() {
-		OWOKPlugin.disableEvents();
+//		OWOKPlugin.disableEvents();
 		a.unbindDisconnectCardEvents();
 		a.bindStatusEvents();
-		$(OWOKPlugin).bind("owokLightCardWasInserted",
-				a.executeDisconnectCardOwokLight);
-		$(OWOKPlugin).bind("owokSmartcardWasInserted",
-				a.executeDisconnectCardOwok)
+//		$(OWOKPlugin).bind("owokLightCardWasInserted",
+//				a.executeDisconnectCardOwokLight);
+//		$(OWOKPlugin).bind("owokSmartcardWasInserted",
+//				a.executeDisconnectCardOwok)
 	};
 	this.unbindLoginEvents = function() {
-		$(OWOKPlugin).unbind("owokLightCardWasInserted",
-				a.executeLoginWithOwokLight);
-		$(OWOKPlugin)
-				.unbind("owokSmartcardWasInserted", a.executeLoginWithOwok)
+//		$(OWOKPlugin).unbind("owokLightCardWasInserted",
+//				a.executeLoginWithOwokLight);
+//		$(OWOKPlugin)
+//				.unbind("owokSmartcardWasInserted", a.executeLoginWithOwok)
 	};
 	this.unbindAddCardEvents = function() {
-		$(OWOKPlugin).unbind("owokLightCardWasInserted",
-				a.executeAddCardOwokLight);
-		$(OWOKPlugin).unbind("owokSmartcardWasInserted", a.executeAddCardOwok)
+//		$(OWOKPlugin).unbind("owokLightCardWasInserted",
+//				a.executeAddCardOwokLight);
+//		$(OWOKPlugin).unbind("owokSmartcardWasInserted", a.executeAddCardOwok)
 	};
 	this.unbindDisconnectCardEvents = function() {
-		$(OWOKPlugin).unbind("owokLightCardWasInserted",
-				a.executeDisconnectCardOwokLight);
-		$(OWOKPlugin).unbind("owokSmartcardWasInserted",
-				a.executeDisconnectCardOwok)
+//		$(OWOKPlugin).unbind("owokLightCardWasInserted",
+//				a.executeDisconnectCardOwokLight);
+//		$(OWOKPlugin).unbind("owokSmartcardWasInserted",
+//				a.executeDisconnectCardOwok)
 	};
 	this.bindStatusEvents = function() {
 		a.unbindStatusEvents();
-		$(OwokStatusCheck).bind("closeButtonPressed", a.onClose);
-		$(OWOKPlugin).bind("owokOnReaderUnregistered owokOnReaderRegistered",
-				a.checkStatusCardReaderPresent);
-		$(OWOKPlugin).bind("owokNoPluginFound", a.showStatusPluginPresentFalse);
-		$(OWOKPlugin).bind("owokReady", a.showStatusPluginPresentTrue);
-		$(OWOKPlugin).bind("owokCardWasRemoved", a.loginCardRemoved);
-		$(OWOKPlugin).bind("owokCardAlreadyInUse", a.owokCardAlreadyInUse)
+		$(StatusCheck).bind("closeButtonPressed", a.onClose);
+//		$(OWOKPlugin).bind("owokOnReaderUnregistered owokOnReaderRegistered",
+//				a.checkStatusCardReaderPresent);
+//		$(OWOKPlugin).bind("owokNoPluginFound", a.showStatusPluginPresentFalse);
+//		$(OWOKPlugin).bind("owokReady", a.showStatusPluginPresentTrue);
+//		$(OWOKPlugin).bind("owokCardWasRemoved", a.loginCardRemoved);
+//		$(OWOKPlugin).bind("owokCardAlreadyInUse", a.owokCardAlreadyInUse)
 	};
 	this.unbindStatusEvents = function() {
-		$(OwokStatusCheck).unbind("closeButtonPressed", a.onClose);
-		$(OWOKPlugin).unbind("owokOnReaderUnregistered owokOnReaderRegistered",
-				a.checkStatusCardReaderPresent);
-		$(OWOKPlugin).unbind("owokNoPluginFound",
-				a.showStatusPluginPresentFalse);
-		$(OWOKPlugin).unbind("owokReady", a.showStatusPluginPresentTrue);
-		$(OWOKPlugin).unbind("owokCardWasRemoved", a.loginCardRemoved);
-		$(OWOKPlugin).unbind("owokCardAlreadyInUse", a.owokCardAlreadyInUse)
+		$(StatusCheck).unbind("closeButtonPressed", a.onClose);
+//		$(OWOKPlugin).unbind("owokOnReaderUnregistered owokOnReaderRegistered",
+//				a.checkStatusCardReaderPresent);
+//		$(OWOKPlugin).unbind("owokNoPluginFound",
+//				a.showStatusPluginPresentFalse);
+//		$(OWOKPlugin).unbind("owokReady", a.showStatusPluginPresentTrue);
+//		$(OWOKPlugin).unbind("owokCardWasRemoved", a.loginCardRemoved);
+//		$(OWOKPlugin).unbind("owokCardAlreadyInUse", a.owokCardAlreadyInUse)
 	};
 	this.resetOwok = function() {
 		try {
-			OWOKPlugin.reset()
+//			OWOKPlugin.reset()
 		} catch (l) {
 			a.runOwokPlugin();
 			return
@@ -108,29 +109,29 @@ function OwokStatusCheck() {
 		a.restartOwokPlugin()
 	};
 	this.runOwokPlugin = function() {
-		OWOKPlugin.run({
-			LoginActionURL : OwokConfig.LoginActionURL,
-			LogoutActionURL : OwokConfig.LogoutActionURL,
-			OwokPath : OwokConfig.OwokPath,
-			ClientRequestScript : OwokConfig.ClientRequestScript,
-			debug : OwokConfig.Debug
-		})
+//		OWOKPlugin.run({
+//			LoginActionURL : OwokConfig.LoginActionURL,
+//			LogoutActionURL : OwokConfig.LogoutActionURL,
+//			OwokPath : OwokConfig.OwokPath,
+//			ClientRequestScript : OwokConfig.ClientRequestScript,
+//			debug : OwokConfig.Debug
+//		})
 	};
 	this.restartOwokPlugin = function() {
-		OWOKPlugin.restart({})
+//		OWOKPlugin.restart({})
 	};
 	this.executeSomethingWithOwokLight = function(l, m, p, v) {
 		a.showStatusLoginCardPresentTrue();
-		if (v == OWOKPlugin.CARD_STATUS_FACTORY)
-			l.notInitalized();
-		else if (v == OWOKPlugin.CARD_STATUS_READY)
-			l.notRegistered();
-		else
-			v == OWOKPlugin.CARD_STATUS_INITIALIZED && l.ready()
+//		if (v == OWOKPlugin.CARD_STATUS_FACTORY)
+//			l.notInitalized();
+//		else if (v == OWOKPlugin.CARD_STATUS_READY)
+//			l.notRegistered();
+//		else
+//			v == OWOKPlugin.CARD_STATUS_INITIALIZED && l.ready()
 	};
 	this.executeLoginWithOwokLight = function(l, m, p, v) {
 		var y = function() {
-			(new OwokStatusCheck).prepareLogin()
+			(new StatusCheck).prepareLogin()
 		}, A = {};
 		A.notInitalized = function() {
 			a.showStatusLoginCardInitialisedFalse(true, y)
@@ -141,7 +142,7 @@ function OwokStatusCheck() {
 		};
 		A.ready = function() {
 			a.closeDialog();
-			OWOKPlugin.showModalLightLogin(v, y)
+//			OWOKPlugin.showModalLightLogin(v, y)
 		};
 		a.executeSomethingWithOwokLight(A, l, m, p, v)
 	};
@@ -150,7 +151,7 @@ function OwokStatusCheck() {
 	};
 	this.executeAddCardOwokLight = function(l, m, p, v) {
 		var y = function() {
-			(new OwokStatusCheck).prepareCardAdd()
+			(new StatusCheck).prepareCardAdd()
 		}, A = {};
 		A.notInitalized = function() {
 			a.showStatusLoginCardInitialisedFalse(true, y)
@@ -167,7 +168,7 @@ function OwokStatusCheck() {
 	};
 	this.executeDisconnectCardOwokLight = function(l, m, p, v) {
 		var y = function() {
-			(new OwokStatusCheck).prepareCardDisconnect()
+			(new StatusCheck).prepareCardDisconnect()
 		}, A = {};
 		A.notInitalized = function() {
 			a.showStatusLoginCardInitialisedFalse(true, y)
@@ -183,25 +184,25 @@ function OwokStatusCheck() {
 		a.executeSomethingWithOwokLight(A, l, m, p, v)
 	};
 	this.executeSomethingWithOwok = function(l, m, p, v) {
-		if (v == OWOKPlugin.CARD_STATUS_FACTORY
-				|| v == OWOKPlugin.CARD_STATUS_READY) {
-			a.showStatusLoginCardPresentTrue();
-			l.notInitalized()
-		} else if (v == OWOKPlugin.CARD_STATUS_INITIALIZED) {
-			a.showStatusLoginCardPresentTrue();
-			a.showStatusLoginCardInitialisedTrue();
-			OWOKPlugin.getCardId();
-			var y = function(A, M) {
-				typeof M == "undefined" ? l.notRegistered() : l.ready();
-				$(OWOKPlugin).unbind("owokUserCardInfoReady", y)
-			};
-			$(OWOKPlugin).bind("owokUserCardInfoReady", y);
-			OWOKPlugin.getUserCardInfo(p)
-		}
+//		if (v == OWOKPlugin.CARD_STATUS_FACTORY
+//				|| v == OWOKPlugin.CARD_STATUS_READY) {
+//			a.showStatusLoginCardPresentTrue();
+//			l.notInitalized()
+//		} else if (v == OWOKPlugin.CARD_STATUS_INITIALIZED) {
+//			a.showStatusLoginCardPresentTrue();
+//			a.showStatusLoginCardInitialisedTrue();
+//			OWOKPlugin.getCardId();
+//			var y = function(A, M) {
+//				typeof M == "undefined" ? l.notRegistered() : l.ready();
+//				$(OWOKPlugin).unbind("owokUserCardInfoReady", y)
+//			};
+//			$(OWOKPlugin).bind("owokUserCardInfoReady", y);
+//			OWOKPlugin.getUserCardInfo(p)
+//		}
 	};
 	this.executeLoginWithOwok = function(l, m, p, v) {
 		var y = function() {
-			(new OwokStatusCheck).prepareLogin()
+			(new StatusCheck).prepareLogin()
 		}, A = {};
 		A.notInitalized = function() {
 			a.showStatusLoginCardInitialisedFalse(false, y)
@@ -218,7 +219,7 @@ function OwokStatusCheck() {
 	};
 	this.executeDisconnectCardOwok = function(l, m, p, v) {
 		var y = function() {
-			(new OwokStatusCheck).prepareCardDisconnect()
+			(new StatusCheck).prepareCardDisconnect()
 		}, A = {};
 		A.notInitalized = function() {
 			a.showStatusLoginCardInitialisedFalse(false, y)
@@ -235,7 +236,7 @@ function OwokStatusCheck() {
 	};
 	this.executeAddCardOwok = function(l, m, p, v) {
 		var y = function() {
-			(new OwokStatusCheck).prepareCardAdd()
+			(new StatusCheck).prepareCardAdd()
 		}, A = {};
 		A.notInitalized = function() {
 			a.showStatusLoginCardInitialisedFalse(false, y)
@@ -266,70 +267,70 @@ function OwokStatusCheck() {
 		a.unbindLoginEvents();
 		a.unbindAddCardEvents();
 		a.unbindDisconnectCardEvents();
-		$(OwokStatusCheck).trigger("owokStatusServiceClosed")
+		$(StatusCheck).trigger("owokStatusServiceClosed")
 	};
 	this.showStatusPluginPresentFalse = function() {
-		$("#owokStatusCheck_1_true").hide();
-		$("#owokStatusCheck_hint_1").show();
-		$("#owokStatusCheck_after_1").hide()
+		$("#StatusCheck_1_true").hide();
+		$("#StatusCheck_hint_1").show();
+		$("#StatusCheck_after_1").hide()
 	};
 	this.showStatusPluginPresentTrue = function() {
-		$("#owokStatusCheck_1_true").show();
-		$("#owokStatusCheck_hint_1").hide();
-		$("#owokStatusCheck_after_1").show();
+		$("#StatusCheck_1_true").show();
+		$("#StatusCheck_hint_1").hide();
+		$("#StatusCheck_after_1").show();
 		a.checkStatusCardReaderPresent()
 	};
 	this.checkStatusCardReaderPresent = function() {
-		OWOKPlugin.getReaderListArray().length > 0 ? a
-				.showStatusCardReaderPresentTrue() : a
-				.showStatusCardReaderPresentFalse()
+//		OWOKPlugin.getReaderListArray().length > 0 ? a
+//				.showStatusCardReaderPresentTrue() : a
+//				.showStatusCardReaderPresentFalse()
 	};
 	this.showStatusCardReaderPresentFalse = function() {
-		$("#owokStatusCheck_2_true").hide();
-		$("#owokStatusCheck_hint_2").show();
-		$("#owokStatusCheck_after_2").hide()
+		$("#StatusCheck_2_true").hide();
+		$("#StatusCheck_hint_2").show();
+		$("#StatusCheck_after_2").hide()
 	};
 	this.showStatusCardReaderPresentTrue = function() {
-		$("#owokStatusCheck_2_true").show();
-		$("#owokStatusCheck_hint_2").hide();
-		$("#owokStatusCheck_after_2").show();
-		$("#owokStatusCheck_3_true").show();
-		$("#owokStatusCheck_hint_3").hide();
-		$("#owokStatusCheck_after_3").show()
+		$("#StatusCheck_2_true").show();
+		$("#StatusCheck_hint_2").hide();
+		$("#StatusCheck_after_2").show();
+		$("#StatusCheck_3_true").show();
+		$("#StatusCheck_hint_3").hide();
+		$("#StatusCheck_after_3").show()
 	};
 	this.showStatusLoginCardPresentFalse = function() {
-		$("#owokStatusCheck_4_true").hide();
-		$("#owokStatusCheck_hint_4").show();
-		$("#owokStatusCheck_after_4").hide()
+		$("#StatusCheck_4_true").hide();
+		$("#StatusCheck_hint_4").show();
+		$("#StatusCheck_after_4").hide()
 	};
 	this.showStatusLoginCardPresentTrue = function() {
-		$("#owokStatusCheck_4_true").show();
-		$("#owokStatusCheck_hint_4").hide();
-		$("#owokStatusCheck_after_4").show()
+		$("#StatusCheck_4_true").show();
+		$("#StatusCheck_hint_4").hide();
+		$("#StatusCheck_after_4").show()
 	};
 	this.showStatusLoginCardInitialisedFalse = function(l, m) {
-		$("#owokStatusCheck_5_true").hide();
-		$("#owokStatusCheck_hint_5").show();
-		$("#owokStatusCheck_after_5").hide();
+		$("#StatusCheck_5_true").hide();
+		$("#StatusCheck_hint_5").show();
+		$("#StatusCheck_after_5").hide();
 		a.closeDialog();
 		(new RegisterWithOlps).show(l, m)
 	};
 	this.showStatusLoginCardInitialisedTrue = function() {
-		$("#owokStatusCheck_hint_5").hide();
-		$("#owokStatusCheck_5_true").show();
-		$("#owokStatusCheck_after_5").hide()
+		$("#StatusCheck_hint_5").hide();
+		$("#StatusCheck_5_true").show();
+		$("#StatusCheck_after_5").hide()
 	}
 };
-function OwokStatusCheckView() {
+function StatusCheckView() {
 	this.showDialog = function() {
 		this.setWidth(430);
-		this.showTemplate('\t<div class="modalHeader">Hinweis</div><div class="owokStatusCheck_description">Um diese Aktion mit der login<span class="kursiv">Card</span> ausf\u00fchren zu k\u00f6nnen,<br>m\u00fcssen folgende Bedingungen erf\u00fcllt sein:</div><div id="owokStatusCheckItems" class="owokStatusCheck_content"><div id="owokStatusCheck_1" class="owokStatusCheckItem"><span id="owokStatusCheck_1_false" class="owokStatusCheck_false"><img id="owokStatusCheck_1_true" class="owokStatusCheck_true" src="/img/allyve/7-layer/1-basics/haken.png" /></span> Installiertes OWOK-Plugin</div><div id="owokStatusCheck_hint_1" class="owokStatusCheckHint"><a target="_blank" href="http://www.reiner-sct.com/cardlogin">Zum Plugin &nbsp; <img src="/img/allyve/7-layer/1-basics/pfeil.png" /></a></div><div id="owokStatusCheck_after_1" class="owokStatusCheck_after"><div id="owokStatusCheck_2" class="owokStatusCheckItem"><span id="owokStatusCheck_2_false" class="owokStatusCheck_false"><img id="owokStatusCheck_2_true" class="owokStatusCheck_true" src="/img/allyve/7-layer/1-basics/haken.png" /></span> Angeschlossener Kartenleser</div><div id="owokStatusCheck_hint_2" class="owokStatusCheckHint"><a target="_blank" href="http://blog.allyve.com/faq">Hilfe & FAQ &nbsp; <img src="/img/allyve/7-layer/1-basics/pfeil.png" /></a></div><div id="owokStatusCheck_after_2" class="owokStatusCheck_after"><div id="owokStatusCheck_3" class="owokStatusCheckItem"><span id="owokStatusCheck_3_false" class="owokStatusCheck_false"><img id="owokStatusCheck_3_true" class="owokStatusCheck_true" src="/img/allyve/7-layer/1-basics/haken.png" /></span> Zugriff auf den Kartenleser</div><div id="owokStatusCheck_hint_3" class="owokStatusCheckHint"><a target="_blank" href="http://blog.allyve.com/faq">Hilfe & FAQ &nbsp; <img src="/img/allyve/7-layer/1-basics/pfeil.png" /></a></div><div id="owokStatusCheck_after_3" class="owokStatusCheck_after"><div id="owokStatusCheck_4" class="owokStatusCheckItem"><span id="owokStatusCheck_4_false" class="owokStatusCheck_false"><img id="owokStatusCheck_4_true" class="owokStatusCheck_true" src="/img/allyve/7-layer/1-basics/haken.png" /></span> Aufgelegte login<span class="kursiv">Card</span></div><div id="owokStatusCheck_hint_4" class="owokStatusCheckHint"><a target="_blank" href="http://blog.allyve.com/faq">Hilfe & FAQ &nbsp; <img src="/img/allyve/7-layer/1-basics/pfeil.png" /></a></div><div id="owokStatusCheck_after_4" class="owokStatusCheck_after"><div id="owokStatusCheck_5" class="owokStatusCheckItem"><span id="owokStatusCheck_5_false" class="owokStatusCheck_false"><img id="owokStatusCheck_5_true" class="owokStatusCheck_true" src="/img/allyve/7-layer/1-basics/haken.png" /></span> Initialisierte login<span class="kursiv">Card</span></div><div id="owokStatusCheck_hint_5" class="owokStatusCheckHint"><a target="_blank" href="http://blog.allyve.com/faq">Hilfe & FAQ &nbsp; <img src="/img/allyve/7-layer/1-basics/pfeil.png" /></a></div><div id="owokStatusCheck_after_5" class="owokStatusCheck_after"></div></div></div></div></div></div>')
+		this.showTemplate('\t<div class="modalHeader">Hinweis</div><div class="StatusCheck_description">Um diese Aktion mit der login<span class="kursiv">Card</span> ausf\u00fchren zu k\u00f6nnen,<br>m\u00fcssen folgende Bedingungen erf\u00fcllt sein:</div><div id="StatusCheckItems" class="StatusCheck_content"><div id="StatusCheck_1" class="StatusCheckItem"><span id="StatusCheck_1_false" class="StatusCheck_false"><img id="StatusCheck_1_true" class="StatusCheck_true" src="images/haken.png" /></span> Installiertes OWOK-Plugin</div><div id="StatusCheck_hint_1" class="StatusCheckHint"><a target="_blank" href="http://www.reiner-sct.com/cardlogin">Zum Plugin &nbsp; <img src="images/pfeil.png" /></a></div><div id="StatusCheck_after_1" class="StatusCheck_after"><div id="StatusCheck_2" class="StatusCheckItem"><span id="StatusCheck_2_false" class="StatusCheck_false"><img id="StatusCheck_2_true" class="StatusCheck_true" src="images/haken.png" /></span> Angeschlossener Kartenleser</div><div id="StatusCheck_hint_2" class="StatusCheckHint"><a target="_blank" href="http://blog.allyve.com/faq">Hilfe & FAQ &nbsp; <img src="images/pfeil.png" /></a></div><div id="StatusCheck_after_2" class="StatusCheck_after"><div id="StatusCheck_3" class="StatusCheckItem"><span id="StatusCheck_3_false" class="StatusCheck_false"><img id="StatusCheck_3_true" class="StatusCheck_true" src="images/haken.png" /></span> Zugriff auf den Kartenleser</div><div id="StatusCheck_hint_3" class="StatusCheckHint"><a target="_blank" href="http://blog.allyve.com/faq">Hilfe & FAQ &nbsp; <img src="images/pfeil.png" /></a></div><div id="StatusCheck_after_3" class="StatusCheck_after"><div id="StatusCheck_4" class="StatusCheckItem"><span id="StatusCheck_4_false" class="StatusCheck_false"><img id="StatusCheck_4_true" class="StatusCheck_true" src="images/haken.png" /></span> Aufgelegte login<span class="kursiv">Card</span></div><div id="StatusCheck_hint_4" class="StatusCheckHint"><a target="_blank" href="http://blog.allyve.com/faq">Hilfe & FAQ &nbsp; <img src="images/pfeil.png" /></a></div><div id="StatusCheck_after_4" class="StatusCheck_after"><div id="StatusCheck_5" class="StatusCheckItem"><span id="StatusCheck_5_false" class="StatusCheck_false"><img id="StatusCheck_5_true" class="StatusCheck_true" src="images/haken.png" /></span> Initialisierte login<span class="kursiv">Card</span></div><div id="StatusCheck_hint_5" class="StatusCheckHint"><a target="_blank" href="http://blog.allyve.com/faq">Hilfe & FAQ &nbsp; <img src="images/pfeil.png" /></a></div><div id="StatusCheck_after_5" class="StatusCheck_after"></div></div></div></div></div></div>')
 	};
 	this.onClose = function() {
-		$(OwokStatusCheck).trigger("closeButtonPressed")
+		$(StatusCheck).trigger("closeButtonPressed")
 	};
 	this.loadButtons = function() {
 	}
 }
-OwokStatusCheckView.prototype = new SimpleDialog;
-OwokStatusCheckView.constructor = OwokStatusCheckView;
+StatusCheckView.prototype = new SimpleDialog;
+StatusCheckView.constructor = StatusCheckView;
