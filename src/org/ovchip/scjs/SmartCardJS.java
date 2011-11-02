@@ -45,7 +45,7 @@ public class SmartCardJS extends Applet {
     private ExecutorService executorService = Executors.newCachedThreadPool();
 
     /**
-     * Console object to handle the output behavior.
+     * Console object to handle the output behaviour.
      */
     private Console console;
 
@@ -68,7 +68,10 @@ public class SmartCardJS extends Applet {
      *** Applet life cycle functionality                                   ***
      *************************************************************************/
     
-    public SmartCardJS() {
+    public void init() {
+        console = new Console(this);
+        console.traceCall("init()");
+        
         String parameter;
         
         // Set up Java Script signal handling
@@ -76,14 +79,6 @@ public class SmartCardJS extends Applet {
         if (parameter != null) {
             jsSignalHandler = parameter;
         }
-        
-        console = new Console(this);
-        
-        emit(new Signal(this, "appletConstructed"));
-    }
-
-    public void init() {
-        console.traceCall("init()");
         
         try {
             js = JSObject.getWindow(this);

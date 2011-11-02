@@ -25,6 +25,12 @@ public class Console {
             "FATAL|ERROR|WARNING|INFO|LOG|DEBUG|TRACE_APDU|TRACE_CALL";
     
     /**
+     * The output filter that will only output to the error output stream.
+     */
+    protected static final String ERROR_OUTPUT_FILTER = 
+            "FATAL|ERROR|WARNING";
+    
+    /**
      * The filter that will be applied to the generated output.
      */
     protected Set<String> outputFilter = new HashSet<String>();
@@ -44,8 +50,11 @@ public class Console {
     public Console(Applet parent) {
         applet = parent;
                 
-        // Set up the level of generated output
-        String filter = applet.getParameter("outputFilter");
+        // Set up the level of generated output        
+        String filter = null;
+        if (applet != null) {
+            filter = applet.getParameter("outputFilter");
+        }
         if (filter == null) {
             filter = DEFAULT_OUTPUT_FILTER;
         }
@@ -80,12 +89,12 @@ public class Console {
     public void setOutputFilter(String filter) {
         traceCall("setOutputFilter(" + filter + ")");
         
-        if (filter.toUpperCase().contains("ALL")) {
+        if (filter.toUpperCase().equals("ALL")) {
             filter = FULL_OUTPUT_FILTER;
         }
         
         outputFilter.clear();
-        for (String level : filter.split("|")) {
+        for (String level : filter.split("\\|")) {
             addOutputLevel(level);
         }
     }
@@ -119,17 +128,19 @@ public class Console {
      * @param message the message for which output should be generated.
      */
     protected void output(String level, String message) {
-        if (outputFilter.contains(level.trim().toUpperCase()) || 
-                outputFilter.contains("ALL")) {
+        if (outputFilter.contains(level.trim().toUpperCase())) {
             String tag = String.format("%-8S", level.trim());
             String prefix = new SimpleDateFormat(
-                    "'[" + tag + " 'HH:mm:ss'] '").format(new Date());
+                    "'[" + tag + " 'HH:mm:ss.SSS'] '").format(new Date());
             
             for (String line : message.split("\n")) {
-                if (applet != null) {
-                    applet.showStatus(prefix + line);
+                if (ERROR_OUTPUT_FILTER.contains(level)) {
+                    System.err.println(prefix + line);
                 } else {
                     System.out.println(prefix + line);
+                }
+                if (applet != null) {
+                    applet.showStatus(prefix + line);
                 }
             }
         }

@@ -14,10 +14,11 @@
   <script>
     var signalHandler = new SignalHandler();
 
-    var attributes = { id: 'SmartCardJS', code:'org.ovchip.scjs.SmartCardJS', 
+    var attributes = { id: "SmartCardJS", code:"org.ovchip.scjs.SmartCardJS", 
     		width:1, height:1 }; 
-    var parameters = { jnlp_href: 'smartcardjs.jnlp' };
-    deployJava.runApplet(attributes, parameters, '1.6'); 
+    var parameters = { jnlp_href: "smartcardjs.jnlp", outputFilter: "ALL" };
+    deployJava.runApplet(attributes, parameters, "1.6");
+    alert($("#SmartCardJS")[0].getOutputFilter());
   </script>
 </body>
 
