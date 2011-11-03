@@ -4,6 +4,7 @@ import java.applet.Applet;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,6 +18,7 @@ import javax.smartcardio.CommandAPDU;
 import javax.smartcardio.ResponseAPDU;
 import javax.smartcardio.TerminalFactory;
 
+import net.sourceforge.scuba.smartcards.CardManager;
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
 
@@ -38,6 +40,8 @@ public class SmartCardJS extends Applet {
      * Java object which will handle signals emitted by the applet.
      */
     private SignalHandler javaSignalHandler = new SignalHandler();
+
+    private boolean signalsEnabled = false;
     
     /**
      * Execution service to handle events asynchronously.
@@ -49,6 +53,12 @@ public class SmartCardJS extends Applet {
      */
     private Console console;
 
+    /**
+     * Manager which polls factories and terminals for terminals and cards.
+     */
+    private CardManager cardManager;    
+    
+    String jsResult;
 
     // Return values for JavaScript calls
     boolean CardIsPresent;
@@ -94,12 +104,19 @@ public class SmartCardJS extends Applet {
         
         emit(new Signal(this, "appletStarted"));
     }
+
+    public void run() {
+        console.traceCall("run()");
+        
+        cardManager = CardManager.getInstance();
+        
+        emit(new Signal(this, "appletRunning"));
+    }
     
     public void stop() {
         console.traceCall("stop()");
         
-        killThread();
-        
+        cardManager.stopPolling();
         executorService.shutdown();
         
         emit(new Signal(this, "appletStopped"));
@@ -138,37 +155,36 @@ public class SmartCardJS extends Applet {
         
         console.removeOutputLevel(level);
     }
-    
-    public String getJSSignalHandler() {
-        console.traceCall("getJSSignalHandler()");
         
-        return jsSignalHandler;
-    }
-    
-    public void setJSSignalHandler(String handler) {
-        console.traceCall("setJSSignalHandler()");
-        
-        jsSignalHandler = handler;
-    }
-    
     /*************************************************************************
      *** Signal handling                                                   ***
      *************************************************************************/
     
+    public void enableSignals(String handler) {
+        jsSignalHandler = handler;
+        signalsEnabled = true;        
+    }
+    
+    public void disableSignals() {
+        signalsEnabled = false;
+    }
+    
     public void emit(final Signal signal) {
         console.traceCall("emit(" + signal + ")");
         
-        executorService.execute(new Runnable() {
-            public void run() { 
-                jEmit(signal);
-            }
-        });
+        if (signalsEnabled) {
+            executorService.execute(new Runnable() {
+                public void run() { 
+                    jEmit(signal);
+                }
+            });
         
-        executorService.execute(new Runnable() {
-            public void run() {
-                jsEmit(signal);
-            }
-        });
+            executorService.execute(new Runnable() {
+                public void run() {
+                    jsEmit(signal);
+                }
+            });
+        }
     }
     
     public void jEmit(Signal signal) {
@@ -187,13 +203,31 @@ public class SmartCardJS extends Applet {
         
         try {
             ((JSObject) js.getMember(jsSignalHandler)).call(
-                    "handle", new Object[]{signal});
+                    "dispatch", new Object[]{signal});
         } catch (JSException e) {
             console.warning("Failed to emit " + signal + 
                     " due to a JSException: " + e.getMessage());
         }
     }
-      
+    
+    /*************************************************************************
+     *** SmartCardIO interaction                                           ***
+     *************************************************************************/
+
+    public String getReaderList() {        
+        List<CardTerminal> readers = cardManager.getTerminals();
+        
+        if (readers.isEmpty()) {
+            return "";
+        } else {
+            String list = "";
+            for (CardTerminal reader : readers) {
+                list += "\n" + reader.getName();
+            }
+            return list.substring(1);
+        }
+    }
+    
     /*
      * Old smart card stuff 
      */

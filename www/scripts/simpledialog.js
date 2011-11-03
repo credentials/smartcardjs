@@ -1,6 +1,7 @@
 function SimpleDialog() {
+	var self = this;
 	this.width = 870;
-	this.folder = "/static/";
+	this.folder = "dialogs/";
 	this.position = "center";
 	this.dialogClass = "simpleDialog simpleDialogAlignTop";
 	this.historyList = [];
@@ -26,9 +27,9 @@ function SimpleDialog() {
 			width : this.width,
 			buttons : this.loadButtons(),
 			dialogClass : this.dialogClass,
-			close : function(d, e) { this.onClose(d, e) },
-			open : function(d, e) {	this.onOpen(d, e) },
-			focus : function(d, e) { this.onFocus(d, e) }
+			close : function(d, e) { self.onClose(d, e) },
+			open : function(d, e) {	self.onOpen(d, e) },
+			focus : function(d, e) { self.onFocus(d, e) }
 		});
 		window.setTimeout(function() { this.adjustOverlaySize() }, 100)
 	};
@@ -75,8 +76,8 @@ function SimpleDialog() {
 	this.setWidth = function(width) { this.width = width };
 	this.setPosition = function(position) { this.position = position };
 	this.setDialogClass = function(dialogClass) { this.dialogClass = dialogClass };
-	this.onOpen = function() {};
-	this.onFocus = function() {};
+	this.onOpen = function() { };
+	this.onFocus = function() { };
 	this.onClose = function() {	this.clearHistory() };
 	this.bindLinks = function() {
 		$("#simpleDialog").unbind("click");

@@ -2,26 +2,10 @@
 <html>
 
 <head>
-  <title>Smart Card-JavaScript Bridge</title>
+  <title>SmartCardJS: a smart card-JavaScript bridge</title>
 
   <!-- Java deployment toolkit -->
   <script src="scripts/lib/deployJava.min.js" type="text/javascript"></script>
-  <script type="text/javascript">
-    function deploySmartCardJS() {
-      var attributes = {
-        id : "SmartCardJS",
-        code :"org.ovchip.scjs.SmartCardJS",
-        width : 1,
-        height : 1
-      };
-      var parameters = {
-        jnlp_href : "applets/smartcardjs.jnlp",
-        outputFilter : "ALL"
-      };
-
-      deployJava.runApplet(attributes, parameters, "1.6")
-    }
-  </script>
   
   <!-- jQuery user interface -->
   <script src="scripts/lib/jquery.min.js" type="text/javascript"></script>
@@ -29,7 +13,8 @@
   <link href="styles/lib/jquery-ui.css" rel="stylesheet" type="text/css" />
 
   <!-- Smart Card-JavaScript bridge -->
-  <script src="scripts/signalhandler.js" type="text/javascript"></script>
+  <script src="scripts/smartcard.js" type="text/javascript"></script>
+  
   
   <script src="scripts/simpledialog.js" type="text/javascript"></script>
   <script src="scripts/statuscheck.js" type="text/javascript"></script>
@@ -37,7 +22,7 @@
 </head>
 
 <body>
-  <h1>Smart Card-JavaScript Bridge</h1>
+  <h1>SmartCardJS: Smart Card-JavaScript Bridge</h1>
 
 <div id="modalDialog" style="display:none;">
     <div class="clear"></div>
@@ -53,11 +38,7 @@
 
     </div>
 </div>
-
-  <script>
-    var signalHandler = new SignalHandler();
-  </script>
-  <button type="button" onclick="javascript:deploySmartCardJS()">Deploy</button>
+  <button type="button" onclick="javascript:deployJava.runApplet({ id : 'SmartCardJS', code : 'org.ovchip.scjs.SmartCardJS', width : 1, height : 1 }, { jnlp_href : 'applets/smartcardjs.jnlp', outputFilter : 'ALL' }, '1.6')">Deploy</button>
   <button type="button" onclick="javascript:(new StatusCheck()).prepareLogin()">Check</button>
 </body>
 

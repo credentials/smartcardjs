@@ -6,21 +6,6 @@
  */
 
 /**
- * SCJS Exception.
- * 
- * @class
- * @return Exception
- */
-var SCJSException = function(message, data) {
-    this.message = message;
-    this.data = data;
-
-    this.toString = function() {
-        return this.message;
-    };
-};
-
-/**
  * Singleton class for the SmartCardJS Applet.
  *
  * @class
@@ -109,18 +94,9 @@ var SmartCardJS = (function() {
      * Optionsparameter, können von außerhalb gesetzt werden.
      */
     var options = {
-        LoginActionURL: '',
-        LogoutActionURL: '',
-        OwokPath: 'dddddddddddddddd',
-        ClientRequestScript: 'foas_request.php',
-
-        PluginFilenameMSIE: 'plugins/rsct_owok_ie-2002.cab',
-        PluginFilenameMSIEocx: 'plugins/rsct_owok_ie-2002.ocx',
-        PluginFilenameWinNpapi: 'plugins/rsct_owok_npapi_windows-2002.xpi',
-        PluginFilenameMacNpapi: 'plugins/rsct_owok_npapi_macos-2002.xpi',
-        PluginFilenameLinuxNpapi: 'plugins/rsct_owok_npapi_linux-2002.xpi',
-
-        AutoLogout: 1,
+        minimumVersion: '1.6',
+        scjsPath: '',
+        outputFilter: 'ALL',
         debug: true
     };
 
@@ -128,7 +104,7 @@ var SmartCardJS = (function() {
     /**
      * Das SCJS Card Plugin Object für die Kommunikation mit der Karte
      */
-    var oca = $('<object></object>');
+    var applet = $('<object></object>');
 
     var unsafe_pin = '';
 
@@ -260,7 +236,7 @@ var SmartCardJS = (function() {
                 alert("Noch nicht verfügbar.");
                 return;
             }else {
-                return oca.SendIOCTL(ctl, 1, cmd);
+                return applet.SendIOCTL(ctl, 1, cmd);
             }
 
             // prüft, ob der Leser sichere PIN Eingabe unterstützt
@@ -274,11 +250,11 @@ var SmartCardJS = (function() {
 //                }
 //                mypin = utils.convertStringToHexPin(mypin, '60', '10');
 //                cmd = tlv.replace(SmartCardJS.PIN_PLACEHOLDER, mypin);
-//                return oca.SendToCard(cmd);
+//                return applet.SendToCard(cmd);
 
 //            } else {
 //                // sichere PIN Eingabe mit Kartenleser
-//                return oca.SendIOCTL(ctl, 1, cmd);
+//                return applet.SendIOCTL(ctl, 1, cmd);
 //            }
         },
 
@@ -340,7 +316,7 @@ var SmartCardJS = (function() {
         getPcScFeatureCtrlCode: function(featureId) {
             //return 0;
             var ctl = 0;
-            var features = oca.SendIOCTL(3400, 0, "");
+            var features = applet.SendIOCTL(3400, 0, "");
             //log('getPcScFeatureCtrlCode <'+features+'>');
             if (!features || features.length < 6) {
                 return ctl;
@@ -383,12 +359,9 @@ var SmartCardJS = (function() {
         CARD_STATUS_LOCKED: 2,
         CARD_STATUS_FACTORY: 3,
 
-        CARD_NO_DESC_STRING: "Unbenannt",
+        CARD_NO_DESC_STRING: "Unknown",
 
         CARD_CONNECT_TIMEOUT_MS: 3000,
-
-        VERSION: "V 0.1.5",
-
 
         /**
          * Das SCJS Object auf der Seite einbinden
@@ -398,55 +371,76 @@ var SmartCardJS = (function() {
          * @function
          */
         run: function(user_options) {
-            // Optionen einstellen
+        	// Merge the provided options with the defaults
             $.extend(options, user_options);
-            // create Plugin HTML and append to body
-            if($("#OwokPluginObject").length==0) {
-                var html_plugin_element = this.createHTMLPluginObject();
-                $('body').append( html_plugin_element );
-                oca = $("#OwokPluginObject")[0];
-                if (SmartCardJS.open()) {
-                    SmartCardJS.enableEvents();
-                    SmartCardJS.bindEvents();
-                    $(SmartCardJS).trigger('owokReady', []);
-                } else {
-                    SmartCardJS.forceBrowserToProvidePlugin();
-                    $(SmartCardJS).trigger('owokNoPluginFound', []);
-                    return;
-                }
-                $("#SCJS>.version").each( function (i, o) {$(o).html( SmartCardJS.VERSION +'&nbsp;&nbsp;PV '+ oca.GetVersion(0) );} );
-            	
+            
+            // Create applet HTML and include in the document
+            if($("#SmartCardJS").length==0) {
+            	// Check whether there is a Java plugin available
+            	if (deployJava.versionCheck(options.minimumVersion + '+')) {
+            		$(SmartCardJS).trigger('scjsPluginFound', []);
+                    var html_plugin_element = this.createHTMLPluginObject();
+                    $('body').append( html_plugin_element );
+                    applet = $("#SmartCardJS")[0];
+                    
+                    // Check whether the applet has properly loaded
+                    if (SmartCardJS.open()) {
+                        SmartCardJS.enableEvents();
+                        SmartCardJS.bindEvents();
+                        $(SmartCardJS).trigger('scjsAppletReady', []);
+                    } else {
+                        $(SmartCardJS).trigger('scjsNoAppletFound', []);
+                    }
+            	} else {
+            		SmartCardJS.forceBrowserToProvidePlugin();
+                    $(SmartCardJS).trigger('scjsNoPluginFound', []);            		
+            	}
             }
         },
         
         restart: function() {
         	if (SmartCardJS.open()) {
                 SmartCardJS.enableEvents();
-                $(SmartCardJS).trigger('owokReady', []);
+                $(SmartCardJS).trigger('scjsAppletReady', []);
             }
         },
 
+        
         /**
-         * Die Funktion aktiviert das Eventhandling
+         * Dispatch an incoming signal to the event handling mechanism
+         * 
+         * @name dispatch
+         * @member SmartCardJS
+         * @function
+         */
+        dispatch: function(signal) {
+        	log("Dispatching signal: " + signal.getEvent() + ");");
+            $(SmartCardJS).trigger(signal.getEvent(), signal.getAttributes());
+        },
+
+        /**
+         * Enable the event handling mechanism
+         * 
          * @name enableEvents
          * @member SmartCardJS
          * @function
          */
         enableEvents: function() {
-            if (typeof oca.Open != 'undefined')
-                return oca.EnableEvents('OwokPluginObject');
+            if (typeof applet.Open != 'undefined')
+                return applet.enableSignals('SmartCardJS');
         },
 
 
         /**
-         * Die Funktion deaktiviert das Eventhandling
+         * Disable the event handling mechanism
+         * 
          * @name disableEvents
          * @member SmartCardJS
          * @function
          */
         disableEvents: function() {
-            if (typeof oca.Open != 'undefined')
-                return oca.DisableEvents();
+            if (typeof applet.Open != 'undefined')
+                return applet.disableSignals();
         },
 
 
@@ -478,7 +472,7 @@ var SmartCardJS = (function() {
          * @function
          */
         bindSCJSEvent: function(type, eventHandle) {
-            $(oca).each(function(index, elem) {
+            $(applet).each(function(index, elem) {
             	if ( elem.attachEvent ) { // Finde heraus, ob es sich um einen IE handelt, der diese Methode unterstützt,
             		elem.attachEvent( type, eventHandle ); // wenn ja binde Event
             	} else { // ansonsten binde mit der default methode
@@ -488,77 +482,65 @@ var SmartCardJS = (function() {
             return this;
         },
 
+        createHTMLPluginObject: function() {
+            var attributes = {
+                id : "SmartCardJS",
+                code :"org.ovchip.scjs.SmartCardJS",
+                width : 1,
+                height : 1
+            };
+            var parameters = {
+                jnlp_href : "applets/smartcardjs.jnlp",
+                outputFilter : options.outputFilter
+            };
+            var startApplet = '<' + 'applet ';
+            var params = '';
+            var endApplet = '<' + '/' + 'applet' + '>';
+            var addCodeAttribute = true;
 
-        /**
-         * Erstellt das SCJS Object HTML-Tag.
-         * Output: <object type="application/chipcard_plugin_20" id="OwokPluginObject" width="1px" height="1px" codebase="http://url.to/rsct_owok_npapi_windows-2000.xpi"></object>
-         * @name createHTMLPluginObject
-         * @member SmartCardJS
-         * @function
-         */
-        createHTMLPluginObject: function () {
-        	var plugin = '<object type="application/chipcard_plugin_20" '+
-                'id="OwokPluginObject" '+
-                'width="1px" '+
-                'height="1px" ';
-
-            if ($.browser.msie) {
-                //plugin += 'CLASSID="CLSID:503F5F92-794F-4273-824E-A3EDF65BFAA4" ';
-                plugin += 'codeBase = "' + options.OwokPath + options.PluginFilenameMSIE + '" ';
-
-            }else {
-                plugin += 'codeBase = "' + options.OwokPath + options.PluginFilenameWinNpapi + '" ';
-                $.getScript( options.OwokPath + "js/jquery.jqbrowser.js",
-                    function () {
-                		if ( $.browserExtended.linux() ) {
-                            plugin += 'codeBase = "' + options.OwokPath + options.PluginFilenameLinuxNpapi + '" ';
-                        } else if ( $.browserExtended.mac() ) {
-                            plugin += 'codeBase = "' + options.OwokPath + 'plugins/rsct_owok_npapi_macos-20.plugin" ';
-                        }
-                    });
+            for (var attribute in attributes) {
+                startApplet += (' ' +attribute+ '="' +attributes[attribute] + '"');
+                if (attribute == 'code' || attribute == 'java_code') {
+                    addCodeAttribute = false;
+                }
             }
-            plugin += ' ></object>';
+        
+            if (parameters != 'undefined' && parameters != null) {
+                var codebaseParam = false;
+                for (var parameter in parameters) {
+                    if (parameter == 'codebase_lookup') {
+                        codebaseParam = true;
+                    }
+                    // Originally, parameter 'object' was used for serialized 
+                    // applets, later, to avoid confusion with object tag in IE
+                    // the 'java_object' was added.  Plugin supports both.
+                    if (parameter == 'object' || parameter == 'java_object') {
+                        addCodeAttribute = false;
+                    }
+                    params += '<param name="' + parameter + '" value="' + 
+                        parameters[parameter] + '"/>';
+                }
+                if (!codebaseParam) {
+                    params += '<param name="codebase_lookup" value="false"/>';
+                }
+            }
 
-//            if ($.browser.mozilla) {
-//                var pluginInstalled = false;
-//                for (var i = 0; i < navigator.plugins.length; i++) {
-//                    if (navigator.plugins[i].name == 'SCJS') {
-//                        if ( InstallTrigger.enabled() ) {
-//                            InstallTrigger.startSoftwareUpdate(options.OwokPath + options.PluginFilenameWinNpapi );
-//                            return 'foo';
-//                        }
-//                    }
-//                }
-//            }
+            if (addCodeAttribute) {
+                startApplet += (' code="dummy"');
+            }
+            startApplet += '>';
 
-            return plugin;
-
-//            var plugin = $('<object type="application/chipcard_plugin_20" ></object>');
-//            plugin.attr('id', 'OwokPluginObject');
-//            //plugin.attr('classid', 'clsid:166B1BCA-3F9C-11CF-8075-444553540000');
-//            plugin.attr('width', '1px');
-//            plugin.attr('height', '1px');
-//
-//            if ($.browser.msie) {
-//                plugin.attr('codebase', options.OwokPath + options.PluginFilenameMSIE);
-//
-//            }else {
-//                plugin.attr('codebase', options.OwokPath + options.PluginFilenameWinNpapi);
-//                $.getScript( options.OwokPath + "js/jquery.jqbrowser.js",
-//                    function () {
-//                        if ( $.browser.linux() ) {
-//                            plugin.attr('codebase', options.OwokPath + options.PluginFilenameLinuxNpapi);
-//                        } else if ( $.browser.mac() ) {
-//                            //plugin.attr('codebase', options.OwokPath + options.PluginFilenameMacNpapi);plugins/rsct_owok_npapi_macos-2002-10-6.pkg
-//                            plugin.attr('codebase', options.OwokPath + 'plugins/rsct_owok_npapi_macos-20.plugin');
-//                        }
-//                    });
-//            }
-//
-//            return plugin;
+            return startApplet + '\n' + params + '\n' + endApplet;
         },
-
-
+        
+        installJava: function() {
+        	deployJava.returnPage = document.location;
+        	deployJava.installLatestJRE();
+        	deployJava.refresh();
+            location.href = document.location;
+            SmartCardJS.run();
+        },
+        
         forceBrowserToProvidePlugin: function() {
             var isLinux = false;
             var isMac = false;
@@ -567,7 +549,7 @@ var SmartCardJS = (function() {
             var isMoz = false;
             var isFirefox = false;
             var isSafari = false;
-            $.getScript( options.OwokPath + "js/jquery.jqbrowser.js",
+            $.getScript( options.scjsPath + "scripts/lib/jquery-browser.min.js",
                 function () {
                     isLinux = $.browserExtended.linux();
                     isMac = $.browserExtended.mac();
@@ -578,32 +560,13 @@ var SmartCardJS = (function() {
                     isSafari = $.browserExtended.safari();
 
                     if (isLinux) {
-                        // für Linux
-                        location.href = options.OwokPath + options.PluginFilenameLinuxNpapi;
+                        // only manual install is possible, so we cannot force
 
                     } else if (isMac) {
-                        // für Mac
-                        if (isMsie) {
-                            //location.href = options.OwokPath + 'plugins/rsct_owok_ie-2002.exe';
+                        // Apple supplies their own version of Java, so we cannot force
 
-                        } else if (isMoz) {
-                            try {
-                                if ( InstallTrigger.enabled() ) {
-                                    InstallTrigger.startSoftwareUpdate(options.OwokPath + options.PluginFilenameWinNpapi );
-                                }
-                            } catch (e) {
-                                location.href = options.OwokPath + options.PluginFilenameMacNpapi;
-                            }
-
-                        } else {
-                            if ( navigator.appVersion.match(/Mac OS X 10_5/i) )
-                                location.href = options.OwokPath + 'plugins/rsct_owok_npapi_macos-2002-10-5.pkg';
-                            else
-                                location.href = options.OwokPath + 'plugins/rsct_owok_npapi_macos-2002-10-6.pkg';
-                        }
-
-                    } else {
-                        // Windows
+                    } else { // Windows                    	
+                    	// FIXME: TODO: check what the correct locations are for windows.
                         if (isMsie) {
                             //location.href = options.OwokPath + 'plugins/rsct_owok_ie-2002.exe';
 
@@ -621,11 +584,8 @@ var SmartCardJS = (function() {
                         } else {
                             //location.href = options.OwokPath + 'plugins/rsct_owok_npapi_windows-2002.exe';
                         }
-
                     }
-
             });
-
         },
 
         /**
@@ -666,8 +626,8 @@ var SmartCardJS = (function() {
             var rsp = SmartCardJS.connectCardEx(readerName, 1, 3); // ShareMode 1 = Exklusice Verbindung; PreferredProtocol=3 ist t=0 | t=1
 
             if (rsp!=0) {
-            	if ( oca.GetLastErrorCode() == -2146435061 ) {
-                    $(SmartCardJS).trigger("owokAlertMessage", [SmartCardJS.getErrorText(oca.GetLastErrorCode())]);
+            	if ( applet.GetLastErrorCode() == -2146435061 ) {
+                    $(SmartCardJS).trigger("owokAlertMessage", [SmartCardJS.getErrorText(applet.GetLastErrorCode())]);
                     $(SmartCardJS).trigger("owokCardAlreadyInUse", []);
                     return;
                 }
@@ -760,8 +720,8 @@ var SmartCardJS = (function() {
          */
         open: function() {
             try {
-                if (typeof oca.Open != 'undefined')
-                    return oca.Open('OwokPluginObject') == 0;
+                if (typeof applet.run != 'undefined')
+                    return applet.run('SmartCardJS') == 0;
             } catch (e) {
                 return false;
             }
@@ -787,7 +747,7 @@ var SmartCardJS = (function() {
             // Den Connect mehrmals versuchen, weil es sein kann, dass zB Windows 7 die Karte blockt
 
             var i = 0;
-            while ( (response = oca.ConnectCard(readerName, shareMode)) != 0 && i < 15 && is_card_ready) {
+            while ( (response = applet.ConnectCard(readerName, shareMode)) != 0 && i < 15 && is_card_ready) {
                 utils.sleep(200);
                 log('try connect card '+i+' '+response);
                 i++;
@@ -798,7 +758,7 @@ var SmartCardJS = (function() {
                 connectedReaderName = readerName;
             } else {
                 // Hier blockt meistens eine andere App die exklusive Verbindung zur Karte
-                alert( SmartCardJS.getErrorText(oca.GetLastErrorCode()) );
+                alert( SmartCardJS.getErrorText(applet.GetLastErrorCode()) );
             }
 
             return response;
@@ -821,10 +781,10 @@ var SmartCardJS = (function() {
 
             // Für die alte Version des Plugins
             // Den Connect mehrmals versuchen, weil es sein kann, dass zB Windows 7 die Karte blockt
-            if ( oca.GetVersion(0) == '2.0.0.0' ) {
+            if ( applet.GetVersion(0) == '2.0.0.0' ) {
 
                 var i = 0;
-                while ( (response = oca.ConnectCardEx(readerName, shareMode, preferredProtocols)) != 0 && i < 15 && is_card_ready) {
+                while ( (response = applet.ConnectCardEx(readerName, shareMode, preferredProtocols)) != 0 && i < 15 && is_card_ready) {
                     utils.sleep(200);
                     log('try connect card ex '+i+' '+response);
                     i++;
@@ -834,14 +794,14 @@ var SmartCardJS = (function() {
 
             } else {
                 // ab Version 2.0.0.1
-                response = oca.ConnectCardEx(readerName, shareMode, preferredProtocols, SmartCardJS.CARD_CONNECT_TIMEOUT_MS);
+                response = applet.ConnectCardEx(readerName, shareMode, preferredProtocols, SmartCardJS.CARD_CONNECT_TIMEOUT_MS);
             }
 
             if (response == 0) {
                 connectedReaderName = readerName;
             } else {
                 // Hier blockt meistens eine andere App die exklusive Verbindung zur Karte
-                // showAlertOk( SmartCardJS.getErrorText(oca.GetLastErrorCode()) );
+                // showAlertOk( SmartCardJS.getErrorText(applet.GetLastErrorCode()) );
             }
 
             return response;
@@ -857,7 +817,7 @@ var SmartCardJS = (function() {
          * @function
          */
         selectOCA: function() {
-            var response = oca.SendToCard(this.SELECT_OCA_COMMAND);
+            var response = applet.SendToCard(this.SELECT_OCA_COMMAND);
             return this.checkResponse(response);
         },
 
@@ -875,7 +835,7 @@ var SmartCardJS = (function() {
          * @function
          */
         getCardLifeCycle: function() {
-            var response = oca.SendToCard("B2 10 01 02 00").toUpperCase();
+            var response = applet.SendToCard("B2 10 01 02 00").toUpperCase();
 
             if (response == "10 01 00 90 00")
                 return this.CARD_STATUS_READY;
@@ -912,7 +872,7 @@ var SmartCardJS = (function() {
          * @function
          */
         getReaderList: function() {
-            return oca.GetReaderList();
+            return applet.getReaderList();
         },
 
 
@@ -929,7 +889,7 @@ var SmartCardJS = (function() {
             if(readerList.length < 1)
                 return new Array();
 
-            var readerListArray = readerList.split('\r\n');
+            var readerListArray = readerList.split('\n');
             return readerListArray;
         },
 
@@ -1001,7 +961,7 @@ var SmartCardJS = (function() {
             var data = pin + " 40 " + utils.getHexCommandLength(data_to_sign) + " " + data_to_sign;
             cmd = utils.getApduCommand(cmd, data);
 
-            var signedData = oca.SendToCard(cmd);
+            var signedData = applet.SendToCard(cmd);
 
             if(signedData == '64 01' // User canceled manually
             || signedData == '64 a1'
@@ -1170,9 +1130,9 @@ var SmartCardJS = (function() {
                     // Schritt 2
                     var sid = response.SID;
 
-                    var sss = oca.SendToCard("90 5A 00 00 03 00 83 80 00");
+                    var sss = applet.SendToCard("90 5A 00 00 03 00 83 80 00");
                     var key_id = sid.charAt(sid.length - 1); //Die letzte Ziffer der Session ID, liegt immer zwischen 0 und D
-                    var r1 = oca.SendToCard("90 AA 00 00 01 0"+key_id+" 00");
+                    var r1 = applet.SendToCard("90 AA 00 00 01 0"+key_id+" 00");
                     
                     // Schritt 3
                     $.ajax({
@@ -1193,7 +1153,7 @@ var SmartCardJS = (function() {
                             }
 
                             // Schritt 4
-                            var r2 = oca.SendToCard(response);
+                            var r2 = applet.SendToCard(response);
 
                             // Eine Antwort mit weniger als 2 Byte ist ein Fehler
                             if (r2.length < 5) {
@@ -1239,9 +1199,9 @@ var SmartCardJS = (function() {
                     // Schritt 2
                     var sid = response.SID;
 
-                    var sss = oca.SendToCard("90 5A 00 00 03 00 83 80 00");
+                    var sss = applet.SendToCard("90 5A 00 00 03 00 83 80 00");
                     var key_id = sid.charAt(sid.length - 1); //Die letzte Ziffer der Session ID, liegt immer zwischen 0 und D
-                    var r1 = oca.SendToCard("90 AA 00 00 01 0"+key_id+" 00");
+                    var r1 = applet.SendToCard("90 AA 00 00 01 0"+key_id+" 00");
 
                     // Schritt 3
                     $.ajax({
@@ -1262,7 +1222,7 @@ var SmartCardJS = (function() {
                             }
 
                             // Schritt 4
-                            var r2 = oca.SendToCard(response);
+                            var r2 = applet.SendToCard(response);
 
                             // Eine Antwort mit weniger als 2 Byte ist ein Fehler
                             if (r2.length < 5) {
@@ -1330,9 +1290,9 @@ var SmartCardJS = (function() {
                {
                     //response = $.parseJSON(response);
                     var sid = response.SID;
-                    var sss = oca.SendToCard("90 5A 00 00 03 00 83 80 00");
+                    var sss = applet.SendToCard("90 5A 00 00 03 00 83 80 00");
                     var key_id = sid.charAt(sid.length - 1); //Die letzte Ziffer der Session ID, liegt immer zwischen 0 und D
-                    var r1 = oca.SendToCard("90 AA 00 00 01 0"+key_id+" 00");
+                    var r1 = applet.SendToCard("90 AA 00 00 01 0"+key_id+" 00");
                     
                     if (r1.length<=2) {
                         $(SmartCardJS).trigger("owokAlertMessage", ["Kann Light Karte nicht erkennen."]);
@@ -1361,7 +1321,7 @@ var SmartCardJS = (function() {
                                 return;
                             }
 
-                            var r2 = oca.SendToCard( response );
+                            var r2 = applet.SendToCard( response );
 
                             if (r2.length < 5) {
                                 $(SmartCardJS).trigger("owokAlertMessage", ["Fehler! Kann Light Card nicht erkennen (rsp2 '"+r2+"')"]);
@@ -1488,7 +1448,7 @@ var SmartCardJS = (function() {
             } else {
                 // Sicheres Ändern der PIN über die Kartenleser Tastatur direkt
                 var cmd = "20 19 01 00 2E 52 2C 01 08 1A 00 24 00 00 24 " + this.PIN_PLACEHOLDER + " " + this.PIN_NEW_PLACEHOLDER;
-                response = oca.SendIOCTL(ctl, 1, cmd);
+                response = applet.SendIOCTL(ctl, 1, cmd);
                 SmartCardJS.changePin2(response);
             }
         },
@@ -1526,7 +1486,7 @@ var SmartCardJS = (function() {
                 var cmd = "00 24 00 00 24 " + mypin + " " + newpin;
                 //cmd = cmd.replace(SmartCardJS.PIN_PLACEHOLDER, mypin);
                 //cmd = cmd.replace(SmartCardJS.PIN_NEW_PLACEHOLDER, newpin);
-                response = oca.SendToCard(cmd);
+                response = applet.SendToCard(cmd);
             }
 
             if ($.modal) $.modal.close();
@@ -1725,7 +1685,7 @@ var SmartCardJS = (function() {
                     if ($.modal) $.modal.close();
                     cmd = utils.getApduCommand(cmd, unsafe_pin);
                     unsafe_pin = '';
-                    return oca.SendToCard(cmd);
+                    return applet.SendToCard(cmd);
                 } else {
                     cmd = utils.getApduCommand(cmd, this.PIN_PLACEHOLDER);
                     return utils.performVerification(cmd);
@@ -1733,7 +1693,7 @@ var SmartCardJS = (function() {
             } else {
                 // status locked
                 cmd = "00 20 25 00 00";
-                return oca.SendToCard(cmd);
+                return applet.SendToCard(cmd);
             }
         },
 
@@ -1928,7 +1888,7 @@ var SmartCardJS = (function() {
 
             var response;
             if (unsafe_pin && secure_ctl==0) {
-                response = oca.SendToCard(cmd);
+                response = applet.SendToCard(cmd);
             } else {
                 response = utils.performVerification(cmd);
             }
@@ -2028,7 +1988,7 @@ var SmartCardJS = (function() {
             cmd = "B2 40 00 00 00";
             if (blocknummer==1)
                 cmd = "B2 40 00 01 00";
-            return oca.SendToCard(cmd);
+            return applet.SendToCard(cmd);
         },
 
         /**
@@ -2040,7 +2000,7 @@ var SmartCardJS = (function() {
          */
         getCardVersion: function()
         {
-            var response = oca.SendToCard("B2 10 01 01 00");
+            var response = applet.SendToCard("B2 10 01 01 00");
             return response.substring(0, response.length-6);
         },
 
@@ -2053,7 +2013,7 @@ var SmartCardJS = (function() {
          */
         getPinTriesMax: function()
         {
-            var response = oca.SendToCard("B2 10 01 04 00");
+            var response = applet.SendToCard("B2 10 01 04 00");
             return utils.getByteAsInt(response, 2).toString();
         },
 
@@ -2066,7 +2026,7 @@ var SmartCardJS = (function() {
          */
         getPinTriesLeft: function()
         {
-            var response = oca.SendToCard("B2 10 01 04 00");
+            var response = applet.SendToCard("B2 10 01 04 00");
             return utils.getByteAsInt(response, 3).toString();
         },
 
@@ -2079,7 +2039,7 @@ var SmartCardJS = (function() {
          */
         getPinMinLength: function()
         {
-            var response = oca.SendToCard("B2 10 01 04 00");
+            var response = applet.SendToCard("B2 10 01 04 00");
             return utils.getByteAsInt(response, 4).toString();
         },
 
@@ -2092,7 +2052,7 @@ var SmartCardJS = (function() {
          */
         getPinMaxLength: function()
         {
-            var response = oca.SendToCard("B2 10 01 04 00");
+            var response = applet.SendToCard("B2 10 01 04 00");
             return utils.getByteAsInt(response, 5).toString();
         },
 
@@ -2105,7 +2065,7 @@ var SmartCardJS = (function() {
          */
         getCardId: function()
         {
-        	var response = oca.SendToCard("B2 10 00 08 00");
+        	var response = applet.SendToCard("B2 10 00 08 00");
             if (response.length<6)
                 return '';
             var card_id = response.substring(6, response.length-6);
@@ -2130,7 +2090,7 @@ var SmartCardJS = (function() {
 
         setPinInfo: function()
         {
-            return oca.SendToCard("14 04 10 00 04 10");
+            return applet.SendToCard("14 04 10 00 04 10");
         },
 
         /**
@@ -2142,7 +2102,7 @@ var SmartCardJS = (function() {
          */
         getAKeyInfo: function()
         {
-            var response = oca.SendToCard("B2 10 00 20 00");
+            var response = applet.SendToCard("B2 10 00 20 00");
 
             return response.substring(5, response.length-6);
         },
@@ -2156,7 +2116,7 @@ var SmartCardJS = (function() {
          */
         getAKeyPup: function()
         {
-            var response = oca.SendToCard("B2 10 00 40 00");
+            var response = applet.SendToCard("B2 10 00 40 00");
 
             if (response.toUpperCase() == "9D A0") {
                 response = SmartCardJS.getExtendedResponse();
@@ -2186,7 +2146,7 @@ var SmartCardJS = (function() {
         getCardDescription: function()
         {
             var desc = "";
-            var data = oca.SendToCard("B2 10 00 10 00");
+            var data = applet.SendToCard("B2 10 00 10 00");
 
             // wenn falscher Lifecycle-Status, dann wert nicht abfragbar
             if (data.toUpperCase() == '9D 05')
@@ -2213,7 +2173,7 @@ var SmartCardJS = (function() {
         {
             var response = -1;
             if (readerName == connectedReaderName || !connectedReaderName) {
-                response = oca.DisConnectCard();
+                response = applet.DisConnectCard();
                 if (response == 0) {
                     connectedReaderName = "";
                 }
@@ -2235,7 +2195,7 @@ var SmartCardJS = (function() {
         {
             var response = -1;
             if (readerName == connectedReaderName || !connectedReaderName) {
-                response = oca.DisConnectCardEx(disposition);
+                response = applet.DisConnectCardEx(disposition);
                 if (response == 0) {
                     connectedReaderName = "";
                 }
@@ -2253,7 +2213,7 @@ var SmartCardJS = (function() {
          */
         getLastErrorCode: function()
         {
-            return oca.GetLastErrorCode();
+            return applet.GetLastErrorCode();
         },
 
         /**
@@ -2266,7 +2226,7 @@ var SmartCardJS = (function() {
          */
         getErrorText: function(errorCode)
         {
-            var error = oca.GetErrorText(errorCode);
+            var error = applet.GetErrorText(errorCode);
             return error;
         },
 
@@ -2279,7 +2239,7 @@ var SmartCardJS = (function() {
          */
         getCardStatus: function()
         {
-            return oca.GetCardStatus(connectedReaderName);
+            return applet.GetCardStatus(connectedReaderName);
         },
 
         /**
@@ -2291,7 +2251,7 @@ var SmartCardJS = (function() {
          */
         reset: function()
         {
-            return oca.Reset();
+            return applet.Reset();
         },
 
         /**
@@ -2304,7 +2264,7 @@ var SmartCardJS = (function() {
          */
         sendToCard: function(cmd)
         {
-            return oca.SendToCard(cmd);
+            return applet.SendToCard(cmd);
         },
 
 
@@ -2317,7 +2277,7 @@ var SmartCardJS = (function() {
          */
         getCardAKeySupported: function()
         {
-            var response = oca.SendToCard("B2 10 01 08 00");
+            var response = applet.SendToCard("B2 10 01 08 00");
             log("CardAKeySupported <"+utils.getByte(response, 0)+">");
             if (utils.getByte(response, 0)!='15')
                 return response;
@@ -2346,7 +2306,7 @@ var SmartCardJS = (function() {
          */
         getLightCardId: function()
         {
-            var response = oca.SendToCard("FF CA 00 00 00");
+            var response = applet.SendToCard("FF CA 00 00 00");
             var card_id = utils.stripBytes(response, 0, 7);
             return card_id;
         },
@@ -2361,7 +2321,7 @@ var SmartCardJS = (function() {
          */
         sysInfo: function()
         {
-            var response = oca.SendToCard("B2 10 A0 40 00");
+            var response = applet.SendToCard("B2 10 A0 40 00");
             log("Sys Info <"+response+">");
             return response;
         },
@@ -2391,7 +2351,7 @@ var SmartCardJS = (function() {
          */
         getCardATR: function(readerName)
         {
-            return oca.GetCardATR(readerName);
+            return applet.GetCardATR(readerName);
         },
 
 
