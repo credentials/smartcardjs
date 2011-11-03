@@ -1,115 +1,116 @@
-
 function StatusCheck() {
-	if (StatusCheck.instance !== undefined)
+	if (StatusCheck.instance !== undefined) {
 		return StatusCheck.instance;
+	}
 	StatusCheck.instance = this;
-	var a = this, b = null, d, e;
+	var view = null, d, e;
 	this.prepareLogin = function() {
-		a.showDialog();
-		a.bindLoginEvents();
-		a.resetOwok()
+		this.showDialog();
+		this.bindLoginEvents();
+		this.resetApplet()
 	};
 	this.prepareCardAdd = function() {
-		a.showDialog();
-		a.bindAddCardEvents();
-		a.resetOwok()
+		this.showDialog();
+		this.bindAddCardEvents();
+		this.resetApplet()
 	};
 	this.prepareCardDisconnect = function() {
-		a.showDialog();
-		a.bindDisconnectCardEvents();
-		a.resetOwok()
+		this.showDialog();
+		this.bindDisconnectCardEvents();
+		this.resetApplet()
 	};
 	this.showDialog = function() {
-		b = new StatusCheckView;
-		b.showDialog()
+		view = new StatusCheckView;
+		view.showDialog()
 	};
 	this.bindEventsWithCallback = function(l, m) {
-//		OWOKPlugin.disableEvents();
-		a.unbindLoginEvents();
-		a.bindStatusEvents();
+//		SmartCardJS.disableEvents();
+		this.unbindLoginEvents();
+		this.bindStatusEvents();
 		d = l;
 		e = m;
 		this.unbindEventsWithCallback();
-//		$(OWOKPlugin).bind("owokLightCardWasInserted", d);
-//		$(OWOKPlugin).bind("owokSmartcardWasInserted", e)
+//		$(SmartCardJS).bind("owokLightCardWasInserted", d);
+//		$(SmartCardJS).bind("owokSmartcardWasInserted", e)
 	};
 	this.unbindEventsWithCallback = function() {
-//		$(OWOKPlugin).unbind("owokLightCardWasInserted", d);
-//		$(OWOKPlugin).unbind("owokSmartcardWasInserted", e)
+//		$(SmartCardJS).unbind("owokLightCardWasInserted", d);
+//		$(SmartCardJS).unbind("owokSmartcardWasInserted", e)
 	};
 	this.bindLoginEvents = function() {
-//		OWOKPlugin.disableEvents();
-		a.unbindLoginEvents();
-		a.bindStatusEvents();
-//		$(OWOKPlugin).bind("owokLightCardWasInserted",
-//				a.executeLoginWithOwokLight);
-//		$(OWOKPlugin).bind("owokSmartcardWasInserted", a.executeLoginWithOwok)
+//		SmartCardJS.disableEvents();
+		this.unbindLoginEvents();
+		this.bindStatusEvents();
+//		$(SmartCardJS).bind("owokLightCardWasInserted",
+//				this.executeLoginWithOwokLight);
+//		$(SmartCardJS).bind("owokSmartcardWasInserted", this.executeLoginWithOwok)
 	};
 	this.bindAddCardEvents = function() {
-//		OWOKPlugin.disableEvents();
-		a.unbindAddCardEvents();
-		a.bindStatusEvents();
-//		$(OWOKPlugin).bind("owokLightCardWasInserted",
-//				a.executeAddCardOwokLight);
-//		$(OWOKPlugin).bind("owokSmartcardWasInserted", a.executeAddCardOwok)
+//		SmartCardJS.disableEvents();
+		this.unbindAddCardEvents();
+		this.bindStatusEvents();
+//		$(SmartCardJS).bind("owokLightCardWasInserted",
+//				this.executeAddCardOwokLight);
+//		$(SmartCardJS).bind("owokSmartcardWasInserted", this.executeAddCardOwok)
 	};
 	this.bindDisconnectCardEvents = function() {
-//		OWOKPlugin.disableEvents();
-		a.unbindDisconnectCardEvents();
-		a.bindStatusEvents();
-//		$(OWOKPlugin).bind("owokLightCardWasInserted",
-//				a.executeDisconnectCardOwokLight);
-//		$(OWOKPlugin).bind("owokSmartcardWasInserted",
-//				a.executeDisconnectCardOwok)
+//		SmartCardJS.disableEvents();
+		this.unbindDisconnectCardEvents();
+		this.bindStatusEvents();
+//		$(SmartCardJS).bind("owokLightCardWasInserted",
+//				this.executeDisconnectCardOwokLight);
+//		$(SmartCardJS).bind("owokSmartcardWasInserted",
+//				this.executeDisconnectCardOwok)
 	};
 	this.unbindLoginEvents = function() {
-//		$(OWOKPlugin).unbind("owokLightCardWasInserted",
-//				a.executeLoginWithOwokLight);
-//		$(OWOKPlugin)
-//				.unbind("owokSmartcardWasInserted", a.executeLoginWithOwok)
+//		$(SmartCardJS).unbind("owokLightCardWasInserted",
+//				this.executeLoginWithOwokLight);
+//		$(SmartCardJS)
+//				.unbind("owokSmartcardWasInserted", this.executeLoginWithOwok)
 	};
 	this.unbindAddCardEvents = function() {
-//		$(OWOKPlugin).unbind("owokLightCardWasInserted",
-//				a.executeAddCardOwokLight);
-//		$(OWOKPlugin).unbind("owokSmartcardWasInserted", a.executeAddCardOwok)
+//		$(SmartCardJS).unbind("owokLightCardWasInserted",
+//				this.executeAddCardOwokLight);
+//		$(SmartCardJS).unbind("owokSmartcardWasInserted", this.executeAddCardOwok)
 	};
 	this.unbindDisconnectCardEvents = function() {
-//		$(OWOKPlugin).unbind("owokLightCardWasInserted",
-//				a.executeDisconnectCardOwokLight);
-//		$(OWOKPlugin).unbind("owokSmartcardWasInserted",
-//				a.executeDisconnectCardOwok)
+//		$(SmartCardJS).unbind("owokLightCardWasInserted",
+//				this.executeDisconnectCardOwokLight);
+//		$(SmartCardJS).unbind("owokSmartcardWasInserted",
+//				this.executeDisconnectCardOwok)
 	};
 	this.bindStatusEvents = function() {
-		a.unbindStatusEvents();
-		$(StatusCheck).bind("closeButtonPressed", a.onClose);
-//		$(OWOKPlugin).bind("owokOnReaderUnregistered owokOnReaderRegistered",
-//				a.checkStatusCardReaderPresent);
-//		$(OWOKPlugin).bind("owokNoPluginFound", a.showStatusPluginPresentFalse);
-//		$(OWOKPlugin).bind("owokReady", a.showStatusPluginPresentTrue);
-//		$(OWOKPlugin).bind("owokCardWasRemoved", a.loginCardRemoved);
-//		$(OWOKPlugin).bind("owokCardAlreadyInUse", a.owokCardAlreadyInUse)
+		this.unbindStatusEvents();
+		$(StatusCheck).bind("closeButtonPressed", this.onClose);
+//		$(SmartCardJS).bind("owokOnReaderUnregistered owokOnReaderRegistered",
+//				this.checkStatusCardReaderPresent);
+//		$(SmartCardJS).bind("owokNoPluginFound", this.showStatusPluginPresentFalse);
+//		$(SmartCardJS).bind("owokReady", this.showStatusPluginPresentTrue);
+//		$(SmartCardJS).bind("owokCardWasRemoved", this.loginCardRemoved);
+//		$(SmartCardJS).bind("owokCardAlreadyInUse", this.owokCardAlreadyInUse)
 	};
 	this.unbindStatusEvents = function() {
-		$(StatusCheck).unbind("closeButtonPressed", a.onClose);
-//		$(OWOKPlugin).unbind("owokOnReaderUnregistered owokOnReaderRegistered",
-//				a.checkStatusCardReaderPresent);
-//		$(OWOKPlugin).unbind("owokNoPluginFound",
-//				a.showStatusPluginPresentFalse);
-//		$(OWOKPlugin).unbind("owokReady", a.showStatusPluginPresentTrue);
-//		$(OWOKPlugin).unbind("owokCardWasRemoved", a.loginCardRemoved);
-//		$(OWOKPlugin).unbind("owokCardAlreadyInUse", a.owokCardAlreadyInUse)
+		$(StatusCheck).unbind("closeButtonPressed", this.onClose);
+//		$(SmartCardJS).unbind("owokOnReaderUnregistered owokOnReaderRegistered",
+//				this.checkStatusCardReaderPresent);
+//		$(SmartCardJS).unbind("owokNoPluginFound",
+//				this.showStatusPluginPresentFalse);
+//		$(SmartCardJS).unbind("owokReady", this.showStatusPluginPresentTrue);
+//		$(SmartCardJS).unbind("owokCardWasRemoved", this.loginCardRemoved);
+//		$(SmartCardJS).unbind("owokCardAlreadyInUse", this.owokCardAlreadyInUse)
 	};
-	this.resetOwok = function() {
+	this.resetApplet = function() {
 		try {
-//			OWOKPlugin.reset()
+//			SmartCardJS.reset()
 		} catch (l) {
-			a.runOwokPlugin();
+			this.runApplet();
 			return
 		}
-		a.restartOwokPlugin()
+		this.restartApplet()
 	};
-	this.runOwokPlugin = function() {
-//		OWOKPlugin.run({
+	this.runApplet = function() {
+		SmartCardJS.run()
+//		SmartCardJS.run({
 //			LoginActionURL : OwokConfig.LoginActionURL,
 //			LogoutActionURL : OwokConfig.LogoutActionURL,
 //			OwokPath : OwokConfig.OwokPath,
@@ -117,34 +118,34 @@ function StatusCheck() {
 //			debug : OwokConfig.Debug
 //		})
 	};
-	this.restartOwokPlugin = function() {
-//		OWOKPlugin.restart({})
+	this.restartApplet = function() {
+//		SmartCardJS.restart({})
 	};
 	this.executeSomethingWithOwokLight = function(l, m, p, v) {
-		a.showStatusLoginCardPresentTrue();
-//		if (v == OWOKPlugin.CARD_STATUS_FACTORY)
+		this.showStatusLoginCardPresentTrue();
+//		if (v == SmartCardJS.CARD_STATUS_FACTORY)
 //			l.notInitalized();
-//		else if (v == OWOKPlugin.CARD_STATUS_READY)
+//		else if (v == SmartCardJS.CARD_STATUS_READY)
 //			l.notRegistered();
 //		else
-//			v == OWOKPlugin.CARD_STATUS_INITIALIZED && l.ready()
+//			v == SmartCardJS.CARD_STATUS_INITIALIZED && l.ready()
 	};
 	this.executeLoginWithOwokLight = function(l, m, p, v) {
 		var y = function() {
 			(new StatusCheck).prepareLogin()
 		}, A = {};
 		A.notInitalized = function() {
-			a.showStatusLoginCardInitialisedFalse(true, y)
+			this.showStatusLoginCardInitialisedFalse(true, y)
 		};
 		A.notRegistered = function() {
-			a.closeDialog();
+			this.closeDialog();
 			account.showRegisterDialogOwokLight(y)
 		};
 		A.ready = function() {
-			a.closeDialog();
-//			OWOKPlugin.showModalLightLogin(v, y)
+			this.closeDialog();
+//			SmartCardJS.showModalLightLogin(v, y)
 		};
-		a.executeSomethingWithOwokLight(A, l, m, p, v)
+		this.executeSomethingWithOwokLight(A, l, m, p, v)
 	};
 	var f = function() {
 		(new AllyveEvents).raiseEvent("addCardCancelled")
@@ -154,50 +155,50 @@ function StatusCheck() {
 			(new StatusCheck).prepareCardAdd()
 		}, A = {};
 		A.notInitalized = function() {
-			a.showStatusLoginCardInitialisedFalse(true, y)
+			this.showStatusLoginCardInitialisedFalse(true, y)
 		};
 		A.notRegistered = function() {
-			a.closeDialog();
+			this.closeDialog();
 			(new AddCardToAccount).showForm(y)
 		};
 		A.ready = function() {
-			a.closeDialog();
+			this.closeDialog();
 			showAlertOk(allyve.mandant.msgCardAlreadyRegistered(), null, f)
 		};
-		a.executeSomethingWithOwokLight(A, l, m, p, v)
+		this.executeSomethingWithOwokLight(A, l, m, p, v)
 	};
 	this.executeDisconnectCardOwokLight = function(l, m, p, v) {
 		var y = function() {
 			(new StatusCheck).prepareCardDisconnect()
 		}, A = {};
 		A.notInitalized = function() {
-			a.showStatusLoginCardInitialisedFalse(true, y)
+			this.showStatusLoginCardInitialisedFalse(true, y)
 		};
 		A.notRegistered = function() {
-			a.closeDialog();
+			this.closeDialog();
 			showAlertOk(allyve.mandant.msgCardNotInUse())
 		};
 		A.ready = function() {
-			a.closeDialog();
+			this.closeDialog();
 			(new ConfirmCardDeactivation).showPinForm(y)
 		};
-		a.executeSomethingWithOwokLight(A, l, m, p, v)
+		this.executeSomethingWithOwokLight(A, l, m, p, v)
 	};
 	this.executeSomethingWithOwok = function(l, m, p, v) {
-//		if (v == OWOKPlugin.CARD_STATUS_FACTORY
-//				|| v == OWOKPlugin.CARD_STATUS_READY) {
-//			a.showStatusLoginCardPresentTrue();
+//		if (v == SmartCardJS.CARD_STATUS_FACTORY
+//				|| v == SmartCardJS.CARD_STATUS_READY) {
+//			this.showStatusLoginCardPresentTrue();
 //			l.notInitalized()
-//		} else if (v == OWOKPlugin.CARD_STATUS_INITIALIZED) {
-//			a.showStatusLoginCardPresentTrue();
-//			a.showStatusLoginCardInitialisedTrue();
-//			OWOKPlugin.getCardId();
+//		} else if (v == SmartCardJS.CARD_STATUS_INITIALIZED) {
+//			this.showStatusLoginCardPresentTrue();
+//			this.showStatusLoginCardInitialisedTrue();
+//			SmartCardJS.getCardId();
 //			var y = function(A, M) {
 //				typeof M == "undefined" ? l.notRegistered() : l.ready();
-//				$(OWOKPlugin).unbind("owokUserCardInfoReady", y)
+//				$(SmartCardJS).unbind("owokUserCardInfoReady", y)
 //			};
-//			$(OWOKPlugin).bind("owokUserCardInfoReady", y);
-//			OWOKPlugin.getUserCardInfo(p)
+//			$(SmartCardJS).bind("owokUserCardInfoReady", y);
+//			SmartCardJS.getUserCardInfo(p)
 //		}
 	};
 	this.executeLoginWithOwok = function(l, m, p, v) {
@@ -205,68 +206,68 @@ function StatusCheck() {
 			(new StatusCheck).prepareLogin()
 		}, A = {};
 		A.notInitalized = function() {
-			a.showStatusLoginCardInitialisedFalse(false, y)
+			this.showStatusLoginCardInitialisedFalse(false, y)
 		};
 		A.notRegistered = function() {
-			a.closeDialog();
+			this.closeDialog();
 			account.showRegisterDialogOwok(y)
 		};
 		A.ready = function() {
-			a.closeDialog();
+			this.closeDialog();
 			auth.initAuthWithOwok(y)
 		};
-		a.executeSomethingWithOwok(A, l, m, p, v)
+		this.executeSomethingWithOwok(A, l, m, p, v)
 	};
 	this.executeDisconnectCardOwok = function(l, m, p, v) {
 		var y = function() {
 			(new StatusCheck).prepareCardDisconnect()
 		}, A = {};
 		A.notInitalized = function() {
-			a.showStatusLoginCardInitialisedFalse(false, y)
+			this.showStatusLoginCardInitialisedFalse(false, y)
 		};
 		A.notRegistered = function() {
-			a.closeDialog();
+			this.closeDialog();
 			showAlertOk(allyve.mandant.msgCardNotInUse())
 		};
 		A.ready = function() {
-			a.closeDialog();
+			this.closeDialog();
 			(new ConfirmCardDeactivation).showPinForm(y)
 		};
-		a.executeSomethingWithOwok(A, l, m, p, v)
+		this.executeSomethingWithOwok(A, l, m, p, v)
 	};
 	this.executeAddCardOwok = function(l, m, p, v) {
 		var y = function() {
 			(new StatusCheck).prepareCardAdd()
 		}, A = {};
 		A.notInitalized = function() {
-			a.showStatusLoginCardInitialisedFalse(false, y)
+			this.showStatusLoginCardInitialisedFalse(false, y)
 		};
 		A.notRegistered = function() {
-			a.closeDialog();
+			this.closeDialog();
 			(new AddCardToAccount).showForm(y)
 		};
 		A.ready = function() {
-			a.closeDialog();
+			this.closeDialog();
 			showAlertOk(allyve.mandant.msgCardAlreadyRegistered(), null, f)
 		};
-		a.executeSomethingWithOwok(A, l, m, p, v)
+		this.executeSomethingWithOwok(A, l, m, p, v)
 	};
 	this.loginCardRemoved = function() {
-		a.showStatusLoginCardPresentFalse()
+		this.showStatusLoginCardPresentFalse()
 	};
 	this.owokCardAlreadyInUse = function() {
-		a.closeDialog();
+		this.closeDialog();
 		showAlertOk(allyve.mandant.msgCardPluginBlocked(), allyve.mandant
 				.headerAchtung())
 	};
 	this.closeDialog = function() {
-		b.close()
+		view.close()
 	};
 	this.onClose = function() {
-		a.unbindStatusEvents();
-		a.unbindLoginEvents();
-		a.unbindAddCardEvents();
-		a.unbindDisconnectCardEvents();
+		this.unbindStatusEvents();
+		this.unbindLoginEvents();
+		this.unbindAddCardEvents();
+		this.unbindDisconnectCardEvents();
 		$(StatusCheck).trigger("owokStatusServiceClosed")
 	};
 	this.showStatusPluginPresentFalse = function() {
@@ -278,10 +279,10 @@ function StatusCheck() {
 		$("#StatusCheck_1_true").show();
 		$("#StatusCheck_hint_1").hide();
 		$("#StatusCheck_after_1").show();
-		a.checkStatusCardReaderPresent()
+		this.checkStatusCardReaderPresent()
 	};
 	this.checkStatusCardReaderPresent = function() {
-//		OWOKPlugin.getReaderListArray().length > 0 ? a
+//		SmartCardJS.getReaderListArray().length > 0 ? a
 //				.showStatusCardReaderPresentTrue() : a
 //				.showStatusCardReaderPresentFalse()
 	};
@@ -312,7 +313,7 @@ function StatusCheck() {
 		$("#StatusCheck_5_true").hide();
 		$("#StatusCheck_hint_5").show();
 		$("#StatusCheck_after_5").hide();
-		a.closeDialog();
+		this.closeDialog();
 		(new RegisterWithOlps).show(l, m)
 	};
 	this.showStatusLoginCardInitialisedTrue = function() {
