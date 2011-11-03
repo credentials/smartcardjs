@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project name="SmartCardJS" default="signedjar">
+<project name="SmartCardJS" default="applet">
 
   <property file="build.properties" />
 
@@ -19,20 +19,19 @@
     </javac>
   </target>
 
-  <target name="signedjar" depends="compile">
-    <jar destfile="${jar.dir}/${jar.applet}">
+  <target name="archive" depends="compile">
+    <jar destfile="${jar.dir}/${jar.archive}">
       <fileset dir="${bin.dir}" />
       <fileset dir="${src.dir}" />
     </jar>
-
-    <signjar jar="${jar.dir}/${jar.applet}" alias="${key.alias}" storepass="${key.storepass}" keystore="${key.store}" />
   </target>
 
-  <target name="unsignedjar" depends="compile">
-    <jar destfile="${jar.dir}/${jar.applet}">
+  <target name="applet" depends="compile">
+    <jar destfile="${jar.applet.dir}/${jar.applet}">
       <fileset dir="${bin.dir}" />
-      <fileset dir="${src.dir}" />
     </jar>
+
+    <signjar jar="${jar.applet.dir}/${jar.applet}" alias="${key.alias}" storepass="${key.storepass}" keystore="${key.store}" />
   </target>
 </project>
 
