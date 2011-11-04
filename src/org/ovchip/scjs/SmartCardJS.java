@@ -18,11 +18,13 @@ import javax.smartcardio.CommandAPDU;
 import javax.smartcardio.ResponseAPDU;
 import javax.smartcardio.TerminalFactory;
 
+import net.sourceforge.scuba.smartcards.CardEvent;
 import net.sourceforge.scuba.smartcards.CardManager;
+import net.sourceforge.scuba.smartcards.CardTerminalListener;
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
 
-public class SmartCardJS extends Applet {
+public class SmartCardJS extends Applet implements CardTerminalListener<CommandAPDU, ResponseAPDU> {
    
     private static final long serialVersionUID = -4855017287165883462L;
 
@@ -34,13 +36,16 @@ public class SmartCardJS extends Applet {
     /**
      * JavaScript object which will handle signals emitted by the applet.
      */
-    private String jsSignalHandler = "signalHandler";
+    private String jsSignalHandler = null;
     
     /**
      * Java object which will handle signals emitted by the applet.
      */
-    private SignalHandler javaSignalHandler = new SignalHandler();
+    private SignalHandler javaSignalHandler = null;
 
+    /**
+     * Whether signals should be emitted or not.
+     */
     private boolean signalsEnabled = false;
     
     /**
@@ -90,6 +95,9 @@ public class SmartCardJS extends Applet {
             jsSignalHandler = parameter;
         }
         
+        // Set up Java signal handling
+        javaSignalHandler = console;
+        
         try {
             js = JSObject.getWindow(this);
         } catch(JSException e) {
@@ -105,12 +113,15 @@ public class SmartCardJS extends Applet {
         emit(new Signal(this, "appletStarted"));
     }
 
-    public void run() {
+    public boolean run() {
         console.traceCall("run()");
         
         cardManager = CardManager.getInstance();
+        cardManager.addCardTerminalListener(this);
         
         emit(new Signal(this, "appletRunning"));
+        
+        return true;
     }
     
     public void stop() {
@@ -214,7 +225,32 @@ public class SmartCardJS extends Applet {
      *** SmartCardIO interaction                                           ***
      *************************************************************************/
 
-    public String getReaderList() {        
+    /**
+     * Called when card inserted.
+     *
+     * @param ce insertion event
+     */
+    public void cardInserted(CardEvent<CommandAPDU, ResponseAPDU> event) {
+        console.traceCall("cardInserted(" + event + ")");
+        
+        emit(new Signal(this, "cardInserted", new Object[]{event.getService()}));
+    }
+
+    /**
+     * Called when card removed.
+     *
+     * @param ce removal event
+     */
+    public void cardRemoved(CardEvent<CommandAPDU, ResponseAPDU> event) {
+        console.traceCall("cardRemoved(" + event + ")");
+
+        emit(new Signal(this, "cardRemoved", new Object[]{event.getService()}));
+    }
+
+    
+    public String getReaderList() {
+        console.traceCall("getReaderList()");
+        
         List<CardTerminal> readers = cardManager.getTerminals();
         
         if (readers.isEmpty()) {

@@ -490,7 +490,7 @@ var SmartCardJS = (function() {
                 height : 1
             };
             var parameters = {
-                jnlp_href : "applets/smartcardjs.jnlp",
+                jnlp_href : "smartcardjs.jnlp",
                 outputFilter : options.outputFilter
             };
             var startApplet = '<' + 'applet ';
@@ -721,7 +721,7 @@ var SmartCardJS = (function() {
         open: function() {
             try {
                 if (typeof applet.run != 'undefined')
-                    return applet.run('SmartCardJS') == 0;
+                    return applet.run();
             } catch (e) {
                 return false;
             }

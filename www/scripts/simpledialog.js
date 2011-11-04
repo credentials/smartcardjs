@@ -31,7 +31,7 @@ function SimpleDialog() {
 			open : function(d, e) {	self.onOpen(d, e) },
 			focus : function(d, e) { self.onFocus(d, e) }
 		});
-		window.setTimeout(function() { this.adjustOverlaySize() }, 100)
+		window.setTimeout(function() { self.adjustOverlaySize() }, 100)
 	};
 	this.adjustOverlaySize = function() {
 		$(document).height() > $(".ui-widget-overlay").height()

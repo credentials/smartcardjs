@@ -5,19 +5,19 @@ function StatusCheck() {
 	StatusCheck.instance = this;
 	var self = this, view = null, d, e;
 	this.prepareLogin = function() {
-		this.showDialog();
-		this.bindLoginEvents();
-		this.resetApplet()
+		self.showDialog();
+		self.bindLoginEvents();
+		self.resetApplet()
 	};
 	this.prepareCardAdd = function() {
-		this.showDialog();
-		this.bindAddCardEvents();
-		this.resetApplet()
+		self.showDialog();
+		self.bindAddCardEvents();
+		self.resetApplet()
 	};
 	this.prepareCardDisconnect = function() {
-		this.showDialog();
-		this.bindDisconnectCardEvents();
-		this.resetApplet()
+		self.showDialog();
+		self.bindDisconnectCardEvents();
+		self.resetApplet()
 	};
 	this.showDialog = function() {
 		view = new StatusCheckView;
@@ -25,11 +25,11 @@ function StatusCheck() {
 	};
 	this.bindEventsWithCallback = function(l, m) {
 		SmartCardJS.disableEvents();
-		this.unbindLoginEvents();
-		this.bindStatusEvents();
+		self.unbindLoginEvents();
+		self.bindStatusEvents();
 		d = l;
 		e = m;
-		this.unbindEventsWithCallback();
+		self.unbindEventsWithCallback();
 		$(SmartCardJS).bind("owokLightCardWasInserted", d);
 		$(SmartCardJS).bind("owokSmartcardWasInserted", e)
 	};
@@ -39,22 +39,22 @@ function StatusCheck() {
 	};
 	this.bindLoginEvents = function() {
 		SmartCardJS.disableEvents();
-		this.unbindLoginEvents();
-		this.bindStatusEvents();
+		self.unbindLoginEvents();
+		self.bindStatusEvents();
 		$(SmartCardJS).bind("owokLightCardWasInserted", this.executeLoginWithOwokLight);
 		$(SmartCardJS).bind("owokSmartcardWasInserted", this.executeLoginWithOwok)
 	};
 	this.bindAddCardEvents = function() {
 		SmartCardJS.disableEvents();
-		this.unbindAddCardEvents();
-		this.bindStatusEvents();
+		self.unbindAddCardEvents();
+		self.bindStatusEvents();
 		$(SmartCardJS).bind("owokLightCardWasInserted", this.executeAddCardOwokLight);
 		$(SmartCardJS).bind("owokSmartcardWasInserted", this.executeAddCardOwok)
 	};
 	this.bindDisconnectCardEvents = function() {
 		SmartCardJS.disableEvents();
-		this.unbindDisconnectCardEvents();
-		this.bindStatusEvents();
+		self.unbindDisconnectCardEvents();
+		self.bindStatusEvents();
 		$(SmartCardJS).bind("owokLightCardWasInserted", this.executeDisconnectCardOwokLight);
 		$(SmartCardJS).bind("owokSmartcardWasInserted",	this.executeDisconnectCardOwok)
 	};
@@ -71,7 +71,7 @@ function StatusCheck() {
 		$(SmartCardJS).unbind("owokSmartcardWasInserted", this.executeDisconnectCardOwok)
 	};
 	this.bindStatusEvents = function() {
-		this.unbindStatusEvents();
+		self.unbindStatusEvents();
 		$(StatusCheck).bind("closeButtonPressed", this.onClose);
 		$(SmartCardJS).bind("owokOnReaderUnregistered owokOnReaderRegistered", this.checkStatusReaderPresent);
 		$(SmartCardJS).bind("scjsNoPluginFound", this.showStatusPluginPresentFalse);
@@ -93,7 +93,7 @@ function StatusCheck() {
 		try {
 			SmartCardJS.reset()
 		} catch (l) {
-			this.runApplet();
+			self.runApplet();
 			return
 		}
 		this.restartApplet()
@@ -105,7 +105,7 @@ function StatusCheck() {
 		SmartCardJS.restart({})
 	};
 	this.executeSomethingWithOwokLight = function(l, m, p, v) {
-		this.showStatusLoginCardPresentTrue();
+		self.showStatusLoginCardPresentTrue();
 		if (v == SmartCardJS.CARD_STATUS_FACTORY)
 			l.notInitalized();
 		else if (v == SmartCardJS.CARD_STATUS_READY)
@@ -118,17 +118,17 @@ function StatusCheck() {
 			(new StatusCheck).prepareLogin()
 		}, A = {};
 		A.notInitalized = function() {
-			this.showStatusLoginCardInitialisedFalse(true, y)
+			self.showStatusLoginCardInitialisedFalse(true, y)
 		};
 		A.notRegistered = function() {
-			this.closeDialog();
+			self.closeDialog();
 			account.showRegisterDialogOwokLight(y)
 		};
 		A.ready = function() {
-			this.closeDialog();
+			self.closeDialog();
 			SmartCardJS.showModalLightLogin(v, y)
 		};
-		this.executeSomethingWithOwokLight(A, l, m, p, v)
+		self.executeSomethingWithOwokLight(A, l, m, p, v)
 	};
 	var f = function() {
 		(new AllyveEvents).raiseEvent("addCardCancelled")
@@ -138,14 +138,14 @@ function StatusCheck() {
 			(new StatusCheck).prepareCardAdd()
 		}, A = {};
 		A.notInitalized = function() {
-			this.showStatusLoginCardInitialisedFalse(true, y)
+			self.showStatusLoginCardInitialisedFalse(true, y)
 		};
 		A.notRegistered = function() {
-			this.closeDialog();
+			self.closeDialog();
 			(new AddCardToAccount).showForm(y)
 		};
 		A.ready = function() {
-			this.closeDialog();
+			self.closeDialog();
 			showAlertOk(allyve.mandant.msgCardAlreadyRegistered(), null, f)
 		};
 		this.executeSomethingWithOwokLight(A, l, m, p, v)
@@ -155,14 +155,14 @@ function StatusCheck() {
 			(new StatusCheck).prepareCardDisconnect()
 		}, A = {};
 		A.notInitalized = function() {
-			this.showStatusLoginCardInitialisedFalse(true, y)
+			self.showStatusLoginCardInitialisedFalse(true, y)
 		};
 		A.notRegistered = function() {
-			this.closeDialog();
+			self.closeDialog();
 			showAlertOk(allyve.mandant.msgCardNotInUse())
 		};
 		A.ready = function() {
-			this.closeDialog();
+			self.closeDialog();
 			(new ConfirmCardDeactivation).showPinForm(y)
 		};
 		this.executeSomethingWithOwokLight(A, l, m, p, v)
@@ -170,11 +170,11 @@ function StatusCheck() {
 	this.executeSomethingWithOwok = function(l, m, p, v) {
 		if (v == SmartCardJS.CARD_STATUS_FACTORY
 				|| v == SmartCardJS.CARD_STATUS_READY) {
-			this.showStatusLoginCardPresentTrue();
+			self.showStatusLoginCardPresentTrue();
 			l.notInitalized()
 		} else if (v == SmartCardJS.CARD_STATUS_INITIALIZED) {
-			this.showStatusLoginCardPresentTrue();
-			this.showStatusLoginCardInitialisedTrue();
+			self.showStatusLoginCardPresentTrue();
+			self.showStatusLoginCardInitialisedTrue();
 			SmartCardJS.getCardId();
 			var y = function(A, M) {
 				typeof M == "undefined" ? l.notRegistered() : l.ready();
@@ -189,68 +189,67 @@ function StatusCheck() {
 			(new StatusCheck).prepareLogin()
 		}, A = {};
 		A.notInitalized = function() {
-			this.showStatusLoginCardInitialisedFalse(false, y)
+			self.showStatusLoginCardInitialisedFalse(false, y)
 		};
 		A.notRegistered = function() {
-			this.closeDialog();
+			self.closeDialog();
 			account.showRegisterDialogOwok(y)
 		};
 		A.ready = function() {
 			this.closeDialog();
 			auth.initAuthWithOwok(y)
 		};
-		this.executeSomethingWithOwok(A, l, m, p, v)
+		self.executeSomethingWithOwok(A, l, m, p, v)
 	};
 	this.executeDisconnectCardOwok = function(l, m, p, v) {
 		var y = function() {
 			(new StatusCheck).prepareCardDisconnect()
 		}, A = {};
 		A.notInitalized = function() {
-			this.showStatusLoginCardInitialisedFalse(false, y)
+			self.showStatusLoginCardInitialisedFalse(false, y)
 		};
 		A.notRegistered = function() {
-			this.closeDialog();
+			self.closeDialog();
 			showAlertOk(allyve.mandant.msgCardNotInUse())
 		};
 		A.ready = function() {
-			this.closeDialog();
+			self.closeDialog();
 			(new ConfirmCardDeactivation).showPinForm(y)
 		};
-		this.executeSomethingWithOwok(A, l, m, p, v)
+		self.executeSomethingWithOwok(A, l, m, p, v)
 	};
 	this.executeAddCardOwok = function(l, m, p, v) {
 		var y = function() {
 			(new StatusCheck).prepareCardAdd()
 		}, A = {};
 		A.notInitalized = function() {
-			this.showStatusLoginCardInitialisedFalse(false, y)
+			self.showStatusLoginCardInitialisedFalse(false, y)
 		};
 		A.notRegistered = function() {
-			this.closeDialog();
+			self.closeDialog();
 			(new AddCardToAccount).showForm(y)
 		};
 		A.ready = function() {
-			this.closeDialog();
+			self.closeDialog();
 			showAlertOk(allyve.mandant.msgCardAlreadyRegistered(), null, f)
 		};
-		this.executeSomethingWithOwok(A, l, m, p, v)
+		self.executeSomethingWithOwok(A, l, m, p, v)
 	};
 	this.loginCardRemoved = function() {
-		this.showStatusCardPresentFalse()
+		self.showStatusCardPresentFalse()
 	};
 	this.owokCardAlreadyInUse = function() {
-		this.closeDialog();
-		showAlertOk(allyve.mandant.msgCardPluginBlocked(), allyve.mandant
-				.headerAchtung())
+		self.closeDialog();
+		showAlertOk(allyve.mandant.msgCardPluginBlocked(), allyve.mandant.headerAchtung())
 	};
 	this.closeDialog = function() {
 		view.close()
 	};
 	this.onClose = function() {
-		this.unbindStatusEvents();
-		this.unbindLoginEvents();
-		this.unbindAddCardEvents();
-		this.unbindDisconnectCardEvents();
+		self.unbindStatusEvents();
+		self.unbindLoginEvents();
+		self.unbindAddCardEvents();
+		self.unbindDisconnectCardEvents();
 		$(StatusCheck).trigger("owokStatusServiceClosed")
 	};
 	this.showStatusPluginPresentFalse = function() {
@@ -275,9 +274,9 @@ function StatusCheck() {
 		self.checkStatusReaderPresent()
 	};
 	this.checkStatusReaderPresent = function() {
-		SmartCardJS.getReaderListArray().length > 0 ? a
-				.showStatusCardReaderPresentTrue() : a
-				.showStatusCardReaderPresentFalse()
+		SmartCardJS.getReaderListArray().length > 0 ? 
+				self.showStatusReaderPresentTrue() : 
+				self.showStatusReaderPresentFalse()
 	};
 	this.showStatusReaderPresentFalse = function() {
 		$("#StatusCheck_3_true").hide();

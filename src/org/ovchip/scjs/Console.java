@@ -9,7 +9,7 @@ import java.util.Set;
 /**
  * Console to generate output messages up to a certain level.  
  */
-public class Console {
+public class Console implements SignalHandler {
 
     /**
      * The default output filter that will be applied if the applet parameter 
@@ -220,5 +220,13 @@ public class Console {
      */
     public void traceCall(String message) {
         output("TRACE_CALL", message);
+    }
+    
+    /*************************************************************************
+     *** Signal logging                                                    ***
+     *************************************************************************/
+    
+    public void handle(Signal signal) {
+        log("Signal '" + signal.getEvent() + "' has been emitted");
     }
 }

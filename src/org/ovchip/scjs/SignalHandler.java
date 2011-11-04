@@ -1,8 +1,8 @@
 package org.ovchip.scjs;
 
-public class SignalHandler {
+import java.util.EventListener;
 
-    public void handle(Signal signal) {
-        
-    }
+public interface SignalHandler extends EventListener {
+
+    public void handle(Signal signal);
 }
