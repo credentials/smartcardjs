@@ -378,7 +378,8 @@ var SmartCardJS = (function() {
             if($("#SmartCardJS").length==0) {
             	// Check whether there is a Java plugin available
             	if (deployJava.versionCheck(options.minimumVersion + '+')) {
-            		$(SmartCardJS).trigger('scjsPluginFound', []);
+            		$(SmartCardJS).trigger('pluginFound');
+            		
                     var html_plugin_element = this.createHTMLPluginObject();
                     $('body').append( html_plugin_element );
                     applet = $("#SmartCardJS")[0];
@@ -387,13 +388,13 @@ var SmartCardJS = (function() {
                     if (SmartCardJS.open()) {
                         SmartCardJS.enableEvents();
                         SmartCardJS.bindEvents();
-                        $(SmartCardJS).trigger('scjsAppletReady', []);
+                        $(SmartCardJS).trigger('appletReady');
                     } else {
-                        $(SmartCardJS).trigger('scjsNoAppletFound', []);
+                        $(SmartCardJS).trigger('appletNotFound');
                     }
             	} else {
             		SmartCardJS.forceBrowserToProvidePlugin();
-                    $(SmartCardJS).trigger('scjsNoPluginFound', []);            		
+                    $(SmartCardJS).trigger('pluginNotFound');            		
             	}
             }
         },
@@ -401,7 +402,7 @@ var SmartCardJS = (function() {
         restart: function() {
         	if (SmartCardJS.open()) {
                 SmartCardJS.enableEvents();
-                $(SmartCardJS).trigger('scjsAppletReady', []);
+                $(SmartCardJS).trigger('appletReady');
             }
         },
 
@@ -414,7 +415,6 @@ var SmartCardJS = (function() {
          * @function
          */
         dispatch: function(signal) {
-        	log("Dispatching signal: " + signal.getEvent() + ");");
             $(SmartCardJS).trigger(signal.getEvent(), signal.getAttributes());
         },
 
@@ -426,7 +426,7 @@ var SmartCardJS = (function() {
          * @function
          */
         enableEvents: function() {
-            if (typeof applet.Open != 'undefined')
+            if (typeof applet.run != 'undefined')
                 return applet.enableSignals('SmartCardJS');
         },
 
@@ -439,7 +439,7 @@ var SmartCardJS = (function() {
          * @function
          */
         disableEvents: function() {
-            if (typeof applet.Open != 'undefined')
+            if (typeof applet.run != 'undefined')
                 return applet.disableSignals();
         },
 
@@ -452,9 +452,12 @@ var SmartCardJS = (function() {
          */
         bindEvents: function() {
             // Reader Events
-            this.bindSCJSEvent("OnReaderAdded", function(data) {SmartCardJS.registerCardReader(data);} );
-            this.bindSCJSEvent("OnReaderRemoved", function(data) {SmartCardJS.unregisterCardReader(data);} );
+        	$(SmartCardJS).bind("terminalAdded", function(data) { $(SmartCardJS).trigger("readerAdded", data) });
+        	$(SmartCardJS).bind("terminalRemoved", function(data) { $(SmartCardJS).trigger("readerRemoved", data) });
+            //this.bindSCJSEvent("OnReaderAdded", function(data) {SmartCardJS.registerCardReader(data);} );
+            //this.bindSCJSEvent("OnReaderRemoved", function(data) {SmartCardJS.unregisterCardReader(data);} );
             // Card Events
+        	//$(SmartCardJS).bind("cardInserted")
             this.bindSCJSEvent("OnCardReady", function(data) {SmartCardJS.onCardReady(data);} );
             this.bindSCJSEvent("OnCardInuse", function(data) {SmartCardJS.onCardInuse(data);} );
             this.bindSCJSEvent("OnCardUnused", function(data) {SmartCardJS.onCardUnused(data);} );
@@ -891,6 +894,35 @@ var SmartCardJS = (function() {
 
             var readerListArray = readerList.split('\n');
             return readerListArray;
+        },
+
+        /**
+         * Die Funktion liefert eine Liste aller angeschlossenen Kartenleser.
+         * @return {string} Die Funktion liefert alle angeschlossenen Leser als String. Die einzelnen Lesernamen sind durch eine CR/LF (#13#10) getrennt.
+         * @name getReaderList
+         * @member SmartCardJS
+         * @function
+         */
+        getCardList: function() {
+            return applet.getCardList();
+        },
+
+
+        /**
+         * Eine Liste aller angeschlossenen Kartenleser als Array
+         * @return {array} Kartenlesernamen
+         * @name getReaderListArray
+         * @member SmartCardJS
+         * @function
+         */
+        getCardListArray: function() {
+            var cardList = this.getCardList();
+
+            if(cardList.length < 1)
+                return new Array();
+
+            var cardListArray = cardList.split('\n');
+            return cardListArray;
         },
 
 

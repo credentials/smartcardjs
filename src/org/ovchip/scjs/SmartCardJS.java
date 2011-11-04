@@ -5,6 +5,7 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
+import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -20,11 +21,15 @@ import javax.smartcardio.TerminalFactory;
 
 import net.sourceforge.scuba.smartcards.CardEvent;
 import net.sourceforge.scuba.smartcards.CardManager;
+import net.sourceforge.scuba.smartcards.CardTerminalEvent;
 import net.sourceforge.scuba.smartcards.CardTerminalListener;
+import net.sourceforge.scuba.smartcards.TerminalFactoryListener;
 import netscape.javascript.JSException;
 import netscape.javascript.JSObject;
 
-public class SmartCardJS extends Applet implements CardTerminalListener<CommandAPDU, ResponseAPDU> {
+public class SmartCardJS 
+    extends Applet 
+    implements CardTerminalListener<CommandAPDU, ResponseAPDU>, TerminalFactoryListener {
    
     private static final long serialVersionUID = -4855017287165883462L;
 
@@ -117,6 +122,7 @@ public class SmartCardJS extends Applet implements CardTerminalListener<CommandA
         console.traceCall("run()");
         
         cardManager = CardManager.getInstance();
+        cardManager.addTerminalFactoryListener(this);
         cardManager.addCardTerminalListener(this);
         
         emit(new Signal(this, "appletRunning"));
@@ -226,9 +232,31 @@ public class SmartCardJS extends Applet implements CardTerminalListener<CommandA
      *************************************************************************/
 
     /**
+     * Called when terminal added.
+     *
+     * @param event addition event
+     */
+    public void cardTerminalAdded(CardTerminalEvent event) {
+        console.traceCall("cardTerminalAdded(" + event + ")");
+        
+        emit(new Signal(this, "terminalAdded", new Object[]{event.getTerminal()}));
+    }
+
+    /**
+     * Called when terminal removed.
+     *
+     * @param event removal event
+     */
+    public void cardTerminalRemoved(CardTerminalEvent event) {
+        console.traceCall("cardTerminalRemoved(" + event + ")");
+        
+        emit(new Signal(this, "terminalRemoved", new Object[]{event.getTerminal()}));
+    }
+    
+    /**
      * Called when card inserted.
      *
-     * @param ce insertion event
+     * @param event insertion event
      */
     public void cardInserted(CardEvent<CommandAPDU, ResponseAPDU> event) {
         console.traceCall("cardInserted(" + event + ")");
@@ -239,7 +267,7 @@ public class SmartCardJS extends Applet implements CardTerminalListener<CommandA
     /**
      * Called when card removed.
      *
-     * @param ce removal event
+     * @param event removal event
      */
     public void cardRemoved(CardEvent<CommandAPDU, ResponseAPDU> event) {
         console.traceCall("cardRemoved(" + event + ")");
@@ -253,11 +281,41 @@ public class SmartCardJS extends Applet implements CardTerminalListener<CommandA
         
         List<CardTerminal> readers = cardManager.getTerminals();
         
+        // Turn this list of readers into a String
         if (readers.isEmpty()) {
             return "";
         } else {
             String list = "";
             for (CardTerminal reader : readers) {
+                list += "\n" + reader.getName();
+            }
+            return list.substring(1);
+        }
+    }
+    
+    public String getCardList() {
+        console.traceCall("getCardList()");
+        
+        List<CardTerminal> readers = cardManager.getTerminals();
+        
+        List<CardTerminal> cards = new Vector<CardTerminal>();
+        // Filter out readers with no cards
+        for (CardTerminal reader : readers) {
+            try {
+                if (!reader.isCardPresent()) {
+                    cards.add(reader);
+                }
+            } catch (CardException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Turn this list of readers into a String
+        if (cards.isEmpty()) {
+            return "";
+        } else {
+            String list = "";
+            for (CardTerminal reader : cards) {
                 list += "\n" + reader.getName();
             }
             return list.substring(1);

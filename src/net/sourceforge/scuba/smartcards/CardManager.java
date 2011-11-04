@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -71,18 +72,25 @@ public class CardManager
 
 	private Map<TerminalFactory, FactoryPoller> factories;
 	private Map<CardTerminal, TerminalPoller> terminals;
+	private Collection<TerminalFactoryListener> terminalFactoryListeners;
 	private Collection<CardTerminalListener<CommandAPDU, ResponseAPDU>> cardTerminalListeners;
 	private Collection<APDUListener<CommandAPDU, ResponseAPDU>> apduListeners;
 
-	private Lock listenersLock;
-	private Condition notWaitingForFirstListenerCondition;
+	private Lock cardTerminalListenersLock;
+	private Condition notWaitingForFirstCardTerminalListenerCondition;
+
+    private Lock terminalFactoryListenersLock;
+    private Condition notWaitingForFirstTerminalFactoryListenerCondition;
 
 	private CardManager() {	   
 		try {
+		    terminalFactoryListeners = new HashSet<TerminalFactoryListener>();
 			cardTerminalListeners = new HashSet<CardTerminalListener<CommandAPDU, ResponseAPDU>>();
 			apduListeners = new HashSet<APDUListener<CommandAPDU, ResponseAPDU>>();
-			listenersLock = new ReentrantLock(true);
-			notWaitingForFirstListenerCondition = listenersLock.newCondition();
+			cardTerminalListenersLock = new ReentrantLock(true);
+			notWaitingForFirstCardTerminalListenerCondition = cardTerminalListenersLock.newCondition();
+            terminalFactoryListenersLock = new ReentrantLock(true);
+            notWaitingForFirstTerminalFactoryListenerCondition = terminalFactoryListenersLock.newCondition();
 
 			factories = new HashMap<TerminalFactory, FactoryPoller>();
 			terminals = new HashMap<CardTerminal, TerminalPoller>();
@@ -277,18 +285,43 @@ public class CardManager
 	 * @param isPolling whether we should immediately start polling this terminal
 	 */
 	public void addTerminal(CardTerminal terminal, boolean isPolling) {
-		TerminalPoller poller = terminals.get(terminal);
-		if (poller == null) {
-			poller = new TerminalPoller(terminal, this);
-			terminals.put(terminal, poller);
-		}
-		if (isPolling && !isPolling(terminal)) {
-			startPolling(terminal);
-		}
-		if (!isPolling && isPolling(terminal)) {
-			stopPolling(terminal);
-		}
-	}
+        TerminalPoller poller = terminals.get(terminal);
+        if (poller == null) {
+            poller = new TerminalPoller(terminal, this);
+            terminals.put(terminal, poller);
+        }
+        if (isPolling && !isPolling(terminal)) {
+            startPolling(terminal);
+        }
+        if (!isPolling && isPolling(terminal)) {
+            stopPolling(terminal);
+        }
+    }
+    
+    /**
+     * Remove a terminal.
+     *
+     * @param terminal the card terminal to remove
+     */
+    public void removeTerminal(CardTerminal terminal) {
+        stopPolling(terminal);        
+        terminals.remove(terminal);
+    }
+    
+    /**
+     * Adds a listener.
+     * 
+     * @param l the listener to add
+     */
+    public void addTerminalFactoryListener(TerminalFactoryListener l) {
+        terminalFactoryListenersLock.lock();
+        try {
+            terminalFactoryListeners.add(l);
+            notWaitingForFirstTerminalFactoryListenerCondition.signalAll();
+        } finally {
+            terminalFactoryListenersLock.unlock();
+        }
+    }
 
 	/**
 	 * Adds a listener.
@@ -296,16 +329,25 @@ public class CardManager
 	 * @param l the listener to add
 	 */
 	public void addCardTerminalListener(CardTerminalListener<CommandAPDU, ResponseAPDU> l) {
-		listenersLock.lock();
+		cardTerminalListenersLock.lock();
 		try {
 			cardTerminalListeners.add(l);
-			notWaitingForFirstListenerCondition.signalAll();
+			notWaitingForFirstCardTerminalListenerCondition.signalAll();
 		} finally {
-			listenersLock.unlock();
+			cardTerminalListenersLock.unlock();
 		}
 	}
 
-	/**
+    /**
+     * Removes a listener.
+     * 
+     * @param l the listener to remove
+     */
+    public void removeTerminalFactoryListener(TerminalFactoryListener l) {
+        terminalFactoryListeners.remove(l);
+    }
+
+    /**
 	 * Removes a listener.
 	 * 
 	 * @param l the listener to remove
@@ -350,6 +392,19 @@ public class CardManager
 		}
 	}
 
+    private void notifyCardTerminalEvent(final CardTerminalEvent cte) {
+        for (final TerminalFactoryListener l : terminalFactoryListeners) { 
+            (new Thread(new Runnable() {
+                public void run() {
+                    switch (cte.getType()) {
+                    case CardTerminalEvent.ADDED: l.cardTerminalAdded(cte); break;
+                    case CardTerminalEvent.REMOVED: l.cardTerminalRemoved(cte); break;
+                    }
+                }
+            })).start();
+        }
+    }
+
 	private void notifyCardEvent(final CardEvent<CommandAPDU, ResponseAPDU> ce) {
 		for (final CardTerminalListener<CommandAPDU, ResponseAPDU> l : cardTerminalListeners) { 
 			(new Thread(new Runnable() {
@@ -363,7 +418,11 @@ public class CardManager
 		}
 	}
 
-	private boolean hasNoListeners() {
+    private boolean hasNoTerminalFactoryListeners() {
+        return terminalFactoryListeners.isEmpty();
+    }
+
+	private boolean hasNoCardTerminalListeners() {
 		return cardTerminalListeners.isEmpty();
 	}
 
@@ -436,6 +495,7 @@ public class CardManager
         private TerminalFactory factory;
         private boolean isPolling, hasStoppedPolling;
         private Thread myThread;
+        private Set<CardTerminal> myTerminals;
 
         private Lock pollingLock;
         private Condition startedPollingCondition, stoppedPollingCondition;
@@ -445,7 +505,9 @@ public class CardManager
             this.isPolling = false;
             this.hasStoppedPolling = true;
             this.cm = cm;
-            this.pollingLock = new ReentrantLock(true);
+            
+            myTerminals = new HashSet<CardTerminal>();
+            pollingLock = new ReentrantLock(true);
             stoppedPollingCondition = pollingLock.newCondition();
             startedPollingCondition = pollingLock.newCondition();
         }
@@ -477,11 +539,11 @@ public class CardManager
                 isPolling = false;
 
                 /* Wake up threads waiting for first listener. */
-                listenersLock.lock();
+                terminalFactoryListenersLock.lock();
                 try {
-                    notWaitingForFirstListenerCondition.signalAll();
+                    notWaitingForFirstTerminalFactoryListenerCondition.signalAll();
                 } finally {
-                    listenersLock.unlock();
+                    terminalFactoryListenersLock.unlock();
                 }
 
                 if (myThread == null || !myThread.isAlive()) { return; }
@@ -496,6 +558,7 @@ public class CardManager
             }
         }
 
+        
         public void run() {
             pollingLock.lock();
             try {
@@ -507,13 +570,13 @@ public class CardManager
             try {
                 while (isPolling) {
                     /* If Card Manager has no listeners, we go to sleep. */
-                    listenersLock.lock();
+                    terminalFactoryListenersLock.lock();
                     try {
-                        while (isPolling && cm.hasNoListeners()) {
-                            notWaitingForFirstListenerCondition.await();
+                        while (isPolling && cm.hasNoTerminalFactoryListeners()) {
+                            notWaitingForFirstTerminalFactoryListenerCondition.await();
                         }
                     } finally {
-                        listenersLock.unlock();
+                        terminalFactoryListenersLock.unlock();
                     }
                     
                     pollingLock.lock();
@@ -521,19 +584,26 @@ public class CardManager
                         try {
                             if (!isPolling) { break; }
                             CardTerminals additionalTerminals = factory.terminals();
-                            if (additionalTerminals == null) { continue; }
-                            List<CardTerminal> terminalsList = additionalTerminals.list();
-                            if (terminalsList == null) { continue; }
-                            
-                            for (CardTerminal terminal: terminalsList) {
-                                if (!cm.terminals.containsKey(terminal)) {
-                                    addTerminal(terminal, isPolling);
+                            if (additionalTerminals != null) {
+                                List<CardTerminal> terminalsList = additionalTerminals.list();
+                                if (terminalsList != null) {
+                                    Set<CardTerminal> addedTerminals = new HashSet<CardTerminal>(terminalsList);
+                                    addedTerminals.removeAll(myTerminals);
+                                    addTerminals(addedTerminals);
+
+                                    Set<CardTerminal> removedTerminals = new HashSet<CardTerminal>(myTerminals);
+                                    removedTerminals.removeAll(terminalsList);
+                                    removeTerminals(removedTerminals);
                                 }
                             }
-                            
-                            Thread.sleep(FACTORY_POLL_INTERVAL);                            
                         } catch (CardException ce) {
-                            ce.printStackTrace(); // for debugging
+                            if (ce.getCause().getMessage().contains("SCARD_E_NO_READERS_AVAILABLE")) {
+                                removeTerminals(myTerminals);
+                            } else {
+                                ce.printStackTrace(); // for debugging
+                            }
+                        } finally {
+                            Thread.sleep(FACTORY_POLL_INTERVAL);
                         }
                     } finally {
                         pollingLock.unlock();
@@ -550,6 +620,30 @@ public class CardManager
             } catch (InterruptedException ie) { 
                 /* NOTE: interrupt, we quit. */
                 // ie.printStackTrace();
+            }
+        }
+
+        /**
+         * @param terminals
+         */
+        private void removeTerminals(Set<CardTerminal> terminals) {
+            for (CardTerminal terminal : terminals) {
+                removeTerminal(terminal);
+                myTerminals.remove(terminal);
+                final CardTerminalEvent cte = new CardTerminalEvent(CardTerminalEvent.REMOVED, terminal);
+                notifyCardTerminalEvent(cte);
+            }
+        }
+
+        /**
+         * @param terminals
+         */
+        private void addTerminals(Set<CardTerminal> terminals) {
+            for (CardTerminal terminal : terminals) {
+                myTerminals.add(terminal);
+                addTerminal(terminal, isPolling);
+                final CardTerminalEvent cte = new CardTerminalEvent(CardTerminalEvent.ADDED, terminal);
+                notifyCardTerminalEvent(cte);
             }
         }
 
@@ -607,11 +701,11 @@ public class CardManager
 				isPolling = false;
 
 				/* Wake up threads waiting for first listener. */
-				listenersLock.lock();
+				cardTerminalListenersLock.lock();
 				try {
-					notWaitingForFirstListenerCondition.signalAll();
+					notWaitingForFirstCardTerminalListenerCondition.signalAll();
 				} finally {
-					listenersLock.unlock();
+					cardTerminalListenersLock.unlock();
 				}
 
 				if (myThread == null || !myThread.isAlive()) { return; }
@@ -641,13 +735,13 @@ public class CardManager
 			try {
 				while (isPolling) {
 					/* If Card Manager has no listeners, we go to sleep. */
-					listenersLock.lock();
+					cardTerminalListenersLock.lock();
 					try {
-						while (isPolling && cm.hasNoListeners()) {
-							notWaitingForFirstListenerCondition.await();
+						while (isPolling && cm.hasNoCardTerminalListeners()) {
+							notWaitingForFirstCardTerminalListenerCondition.await();
 						}
 					} finally {
-						listenersLock.unlock();
+						cardTerminalListenersLock.unlock();
 					}
 					
 					pollingLock.lock();

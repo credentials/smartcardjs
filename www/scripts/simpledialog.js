@@ -83,12 +83,12 @@ function SimpleDialog() {
 		$("#simpleDialog").unbind("click");
 		$("#simpleDialog").bind("click", function(b) {
 			b = b.target.id;
-			if (this.isChildLink(b)) {
+			if (self.isChildLink(b)) {
 				b = b.match(/(.*)_link/);
 				this.show(b[1]);
 				return false
 			}
-			if (this.isFunctionLink(b)) {
+			if (self.isFunctionLink(b)) {
 				b = b.match(/(.*)_internal/);
 				$(this).dialog("close");
 				window[b[1]]();

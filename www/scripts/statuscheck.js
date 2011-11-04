@@ -41,53 +41,55 @@ function StatusCheck() {
 		SmartCardJS.disableEvents();
 		self.unbindLoginEvents();
 		self.bindStatusEvents();
-		$(SmartCardJS).bind("owokLightCardWasInserted", this.executeLoginWithOwokLight);
-		$(SmartCardJS).bind("owokSmartcardWasInserted", this.executeLoginWithOwok)
+		$(SmartCardJS).bind("owokLightCardWasInserted", self.executeLoginWithOwokLight);
+		$(SmartCardJS).bind("owokSmartcardWasInserted", self.executeLoginWithOwok)
 	};
 	this.bindAddCardEvents = function() {
 		SmartCardJS.disableEvents();
 		self.unbindAddCardEvents();
 		self.bindStatusEvents();
-		$(SmartCardJS).bind("owokLightCardWasInserted", this.executeAddCardOwokLight);
-		$(SmartCardJS).bind("owokSmartcardWasInserted", this.executeAddCardOwok)
+		$(SmartCardJS).bind("owokLightCardWasInserted", self.executeAddCardOwokLight);
+		$(SmartCardJS).bind("owokSmartcardWasInserted", self.executeAddCardOwok)
 	};
 	this.bindDisconnectCardEvents = function() {
 		SmartCardJS.disableEvents();
 		self.unbindDisconnectCardEvents();
 		self.bindStatusEvents();
-		$(SmartCardJS).bind("owokLightCardWasInserted", this.executeDisconnectCardOwokLight);
-		$(SmartCardJS).bind("owokSmartcardWasInserted",	this.executeDisconnectCardOwok)
+		$(SmartCardJS).bind("owokLightCardWasInserted", self.executeDisconnectCardOwokLight);
+		$(SmartCardJS).bind("owokSmartcardWasInserted",	self.executeDisconnectCardOwok)
 	};
 	this.unbindLoginEvents = function() {
-		$(SmartCardJS).unbind("owokLightCardWasInserted", this.executeLoginWithOwokLight);
-		$(SmartCardJS).unbind("owokSmartcardWasInserted", this.executeLoginWithOwok)
+		$(SmartCardJS).unbind("owokLightCardWasInserted", self.executeLoginWithOwokLight);
+		$(SmartCardJS).unbind("owokSmartcardWasInserted", self.executeLoginWithOwok)
 	};
 	this.unbindAddCardEvents = function() {
-		$(SmartCardJS).unbind("owokLightCardWasInserted", this.executeAddCardOwokLight);
-		$(SmartCardJS).unbind("owokSmartcardWasInserted", this.executeAddCardOwok)
+		$(SmartCardJS).unbind("owokLightCardWasInserted", self.executeAddCardOwokLight);
+		$(SmartCardJS).unbind("owokSmartcardWasInserted", self.executeAddCardOwok)
 	};
 	this.unbindDisconnectCardEvents = function() {
-		$(SmartCardJS).unbind("owokLightCardWasInserted", this.executeDisconnectCardOwokLight);
-		$(SmartCardJS).unbind("owokSmartcardWasInserted", this.executeDisconnectCardOwok)
+		$(SmartCardJS).unbind("owokLightCardWasInserted", self.executeDisconnectCardOwokLight);
+		$(SmartCardJS).unbind("owokSmartcardWasInserted", self.executeDisconnectCardOwok)
 	};
 	this.bindStatusEvents = function() {
 		self.unbindStatusEvents();
-		$(StatusCheck).bind("closeButtonPressed", this.onClose);
-		$(SmartCardJS).bind("owokOnReaderUnregistered owokOnReaderRegistered", this.checkStatusReaderPresent);
-		$(SmartCardJS).bind("scjsNoPluginFound", this.showStatusPluginPresentFalse);
-		$(SmartCardJS).bind("scjsPluginFound", this.showStatusPluginPresentTrue);
-		$(SmartCardJS).bind("scjsAppletReady", this.showStatusAppletPresentTrue);
-		$(SmartCardJS).bind("owokCardWasRemoved", this.loginCardRemoved);
-		$(SmartCardJS).bind("owokCardAlreadyInUse", this.owokCardAlreadyInUse)
+		$(StatusCheck).bind("closeButtonPressed", self.onClose);
+		$(SmartCardJS).bind("pluginNotFound", self.showStatusPluginPresentFalse);
+		$(SmartCardJS).bind("pluginFound", self.showStatusPluginPresentTrue);
+		$(SmartCardJS).bind("appletReady", self.showStatusAppletPresentTrue);
+		$(SmartCardJS).bind("readerRemoved readerAdded", self.checkStatusReaderPresent);
+		$(SmartCardJS).bind("cardRemoved cardInserted", self.checkStatusCardPresent);
+//		$(SmartCardJS).bind("cardRemoved", self.loginCardRemoved);
+//		$(SmartCardJS).bind("owokCardAlreadyInUse", self.owokCardAlreadyInUse)
 	};
 	this.unbindStatusEvents = function() {
-		$(StatusCheck).unbind("closeButtonPressed", this.onClose);
-		$(SmartCardJS).unbind("owokOnReaderUnregistered owokOnReaderRegistered", this.checkStatusReaderPresent);
-		$(SmartCardJS).unbind("scjsNoPluginFound", this.showStatusPluginPresentFalse);
-		$(SmartCardJS).unbind("scjsPluginFound", this.showStatusPluginPresentTrue);
-		$(SmartCardJS).unbind("scjsAppletReady", this.showStatusAppletPresentTrue);
-		$(SmartCardJS).unbind("owokCardWasRemoved", this.loginCardRemoved);
-		$(SmartCardJS).unbind("owokCardAlreadyInUse", this.owokCardAlreadyInUse)
+		$(StatusCheck).unbind("closeButtonPressed", self.onClose);
+		$(SmartCardJS).unbind("pluginNotFound", self.showStatusPluginPresentFalse);
+		$(SmartCardJS).unbind("pluginFound", self.showStatusPluginPresentTrue);
+		$(SmartCardJS).unbind("appletReady", self.showStatusAppletPresentTrue);
+		$(SmartCardJS).unbind("readerRemoved readerAdded", self.checkStatusReaderPresent);
+		$(SmartCardJS).unbind("cardRemoved cardInserted", self.checkStatusCardPresent);
+//		$(SmartCardJS).unbind("cardRemoved", self.loginCardRemoved);
+//		$(SmartCardJS).unbind("owokCardAlreadyInUse", self.owokCardAlreadyInUse)
 	};
 	this.resetApplet = function() {
 		try {
@@ -96,7 +98,7 @@ function StatusCheck() {
 			self.runApplet();
 			return
 		}
-		this.restartApplet()
+		self.restartApplet()
 	};
 	this.runApplet = function() {
 		SmartCardJS.run()
@@ -148,7 +150,7 @@ function StatusCheck() {
 			self.closeDialog();
 			showAlertOk(allyve.mandant.msgCardAlreadyRegistered(), null, f)
 		};
-		this.executeSomethingWithOwokLight(A, l, m, p, v)
+		self.executeSomethingWithOwokLight(A, l, m, p, v)
 	};
 	this.executeDisconnectCardOwokLight = function(l, m, p, v) {
 		var y = function() {
@@ -165,7 +167,7 @@ function StatusCheck() {
 			self.closeDialog();
 			(new ConfirmCardDeactivation).showPinForm(y)
 		};
-		this.executeSomethingWithOwokLight(A, l, m, p, v)
+		self.executeSomethingWithOwokLight(A, l, m, p, v)
 	};
 	this.executeSomethingWithOwok = function(l, m, p, v) {
 		if (v == SmartCardJS.CARD_STATUS_FACTORY
@@ -196,7 +198,7 @@ function StatusCheck() {
 			account.showRegisterDialogOwok(y)
 		};
 		A.ready = function() {
-			this.closeDialog();
+			self.closeDialog();
 			auth.initAuthWithOwok(y)
 		};
 		self.executeSomethingWithOwok(A, l, m, p, v)
@@ -278,6 +280,11 @@ function StatusCheck() {
 				self.showStatusReaderPresentTrue() : 
 				self.showStatusReaderPresentFalse()
 	};
+	this.checkStatusCardPresent = function() {
+		SmartCardJS.getCardListArray().length > 0 ? 
+				self.showStatusCardPresentTrue() : 
+				self.showStatusCardPresentFalse()
+	};
 	this.showStatusReaderPresentFalse = function() {
 		$("#StatusCheck_3_true").hide();
 		$("#StatusCheck_hint_3").show();
@@ -312,8 +319,9 @@ function StatusCheck() {
 function StatusCheckView() {
 	this.showDialog = function() {
 		this.setWidth(430);
-		this.show('initialise');
+		//this.show('initialise');
 		//this.showTemplate('\t<div class="modalHeader">Hinweis</div><div class="StatusCheck_description">Um diese Aktion mit der login<span class="kursiv">Card</span> ausf\u00fchren zu k\u00f6nnen,<br>m\u00fcssen folgende Bedingungen erf\u00fcllt sein:</div><div id="StatusCheckItems" class="StatusCheck_content"><div id="StatusCheck_1" class="StatusCheckItem"><span id="StatusCheck_1_false" class="StatusCheck_false"><img id="StatusCheck_1_true" class="StatusCheck_true" src="images/check.png" /></span> Java Plugin installed</div><div id="StatusCheck_hint_1" class="StatusCheckHint"><a target="_blank" href="http://www.reiner-sct.com/cardlogin">Zum Plugin &nbsp; <img src="images/arrow.png" /></a></div><div id="StatusCheck_after_1" class="StatusCheck_after"><div id="StatusCheck_2" class="StatusCheckItem"><span id="StatusCheck_2_false" class="StatusCheck_false"><img id="StatusCheck_2_true" class="StatusCheck_true" src="images/check.png" /></span> Angeschlossener Kartenleser</div><div id="StatusCheck_hint_2" class="StatusCheckHint"><a target="_blank" href="http://blog.allyve.com/faq">Hilfe & FAQ &nbsp; <img src="images/arrow.png" /></a></div><div id="StatusCheck_after_2" class="StatusCheck_after"><div id="StatusCheck_3" class="StatusCheckItem"><span id="StatusCheck_3_false" class="StatusCheck_false"><img id="StatusCheck_3_true" class="StatusCheck_true" src="images/check.png" /></span> Zugriff auf den Kartenleser</div><div id="StatusCheck_hint_3" class="StatusCheckHint"><a target="_blank" href="http://blog.allyve.com/faq">Hilfe & FAQ &nbsp; <img src="images/arrow.png" /></a></div><div id="StatusCheck_after_3" class="StatusCheck_after"><div id="StatusCheck_4" class="StatusCheckItem"><span id="StatusCheck_4_false" class="StatusCheck_false"><img id="StatusCheck_4_true" class="StatusCheck_true" src="images/check.png" /></span> Aufgelegte login<span class="kursiv">Card</span></div><div id="StatusCheck_hint_4" class="StatusCheckHint"><a target="_blank" href="http://blog.allyve.com/faq">Hilfe & FAQ &nbsp; <img src="images/arrow.png" /></a></div><div id="StatusCheck_after_4" class="StatusCheck_after"><div id="StatusCheck_5" class="StatusCheckItem"><span id="StatusCheck_5_false" class="StatusCheck_false"><img id="StatusCheck_5_true" class="StatusCheck_true" src="images/check.png" /></span> Initialisierte login<span class="kursiv">Card</span></div><div id="StatusCheck_hint_5" class="StatusCheckHint"><a target="_blank" href="http://blog.allyve.com/faq">Hilfe & FAQ &nbsp; <img src="images/arrow.png" /></a></div><div id="StatusCheck_after_5" class="StatusCheck_after"></div></div></div></div></div></div>')
+		this.showTemplate('<div class="modalHeader">Notice</div><div class="StatusCheck_description">	In order to use your ... card, the following conditions must be met:</div><div id="StatusCheckItems" class="StatusCheck_content">	<div id="StatusCheck_1" class="StatusCheckItem">		<span id="StatusCheck_1_false" class="StatusCheck_false"><img	id="StatusCheck_1_true" class="StatusCheck_true" src="images/check.png" /></span> 		Java plug-in installed	</div>	<div id="StatusCheck_hint_1" class="StatusCheckHint">		<a target="_blank" href="http://www.java.com/getjava/" onclick="javascript:SmartCardJS.installJava();">		  Get Java &nbsp; <img src="images/arrow.png" />		</a>	</div>	<div id="StatusCheck_after_1" class="StatusCheck_after">		<div id="StatusCheck_2" class="StatusCheckItem">			<span id="StatusCheck_2_false" class="StatusCheck_false"><img id="StatusCheck_2_true" class="StatusCheck_true" src="images/check.png" /></span> 			Java applet loaded		</div>		<div id="StatusCheck_hint_2" class="StatusCheckHint">			<a target="_blank" href="http://blog.allyve.com/faq">			  Help &amp; FAQ &nbsp; <img src="images/arrow.png" />			</a>		</div>		<div id="StatusCheck_after_2" class="StatusCheck_after">			<div id="StatusCheck_3" class="StatusCheckItem">				<span id="StatusCheck_3_false" class="StatusCheck_false"><img	id="StatusCheck_3_true" class="StatusCheck_true" src="images/check.png" /></span>				Card reader connected			</div>			<div id="StatusCheck_hint_3" class="StatusCheckHint">				<a target="_blank" href="http://blog.allyve.com/faq">				  Help &amp; FAQ &nbsp; <img src="images/arrow.png" />				</a>			</div>			<div id="StatusCheck_after_3" class="StatusCheck_after">				<div id="StatusCheck_4" class="StatusCheckItem">					<span id="StatusCheck_4_false" class="StatusCheck_false"><img	id="StatusCheck_4_true" class="StatusCheck_true" src="images/check.png" /></span>					  Smart card present				</div>				<div id="StatusCheck_hint_4" class="StatusCheckHint">					<a target="_blank" href="http://blog.allyve.com/faq">					  Help &amp;	FAQ &nbsp; <img src="images/arrow.png" />					</a>				</div>				<div id="StatusCheck_after_4" class="StatusCheck_after">					<div id="StatusCheck_5" class="StatusCheckItem">						<span id="StatusCheck_5_false" class="StatusCheck_false"><img	id="StatusCheck_5_true" class="StatusCheck_true" src="images/check.png" /></span>					  ... card detected					</div>					<div id="StatusCheck_hint_5" class="StatusCheckHint">						<a target="_blank" href="http://blog.allyve.com/faq">						  Help &amp; FAQ &nbsp; <img src="images/arrow.png" />						</a>					</div>					<div id="StatusCheck_after_5" class="StatusCheck_after"></div>				</div>			</div>		</div>	</div></div>');
 	};
 	this.onClose = function() {
 		$(StatusCheck).trigger("closeButtonPressed")
