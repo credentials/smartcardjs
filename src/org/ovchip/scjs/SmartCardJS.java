@@ -302,7 +302,7 @@ public class SmartCardJS
         // Filter out readers with no cards
         for (CardTerminal reader : readers) {
             try {
-                if (!reader.isCardPresent()) {
+                if (reader.isCardPresent()) {
                     cards.add(reader);
                 }
             } catch (CardException e) {
