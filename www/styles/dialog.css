@@ -1,68 +1,5 @@
 @CHARSET "UTF-8";
 
-* {
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    background-color: #fff;
-    color: #666;
-    font-family: Arial, Verdana, sans-serif;
-    font-size: 11px;
-    outline: none;
-}
-
-a {
-    color: #333;
-    text-decoration: none;
-}
-
-a:active,a:focus,a:visited {
-    outline: none;
-}
-
-img {
-    border: none;
-}
-
-input.text {
-    border: 1px solid #666;
-    padding: 2px;
-    width: 130px;
-}
-
-ul,li {
-    margin-left: 8px;
-    padding: 0;
-}
-
-.radio_label {
-    padding: 0 5px 0 10px;
-}
-
-fieldset {
-    background-image: none;
-    border: 0 none #fff;
-    padding: 0;
-}
-
-fieldset.button_row {
-    margin-left: 13em;
-}
-
-.button {
-    background-color: #fe9900;
-    border: 1px solid #000;
-    color: #fff;
-    cursor: pointer;
-    padding: 1px;
-}
-
-.clear {
-    clear: both;
-}
-
 #modalDialog button {
     padding-left: 5px;
     padding-right: 5px;
@@ -151,10 +88,11 @@ fieldset.button_row {
 
 .simpleDialog .ui-dialog-titlebar,.alertBox .ui-dialog-titlebar {
     background-color: #FFF;
+    background-image: none;   
 }
 
 .simpleDialog .ui-widget-header,.alertBox .ui-widget-header {
-    border-bottom: 0;
+    border: none;
 }
 
 .simpleDialog .ui-state-default,.alertBox .ui-state-default {
@@ -187,52 +125,4 @@ fieldset.button_row {
 #simpleDialog .trenner {
     border-top: 1px solid #666;
     padding-top: 8px;
-}
-
-.kursiv {
-    font-style: italic;
-}
-
-.StatusCheck_description {
-    margin-bottom: 10px;
-}
-
-#StatusCheckItems {
-    height: 100px;
-    margin-bottom: 10px;
-}
-
-.StatusCheckItem {
-    clear: both;
-    float: left;
-    margin-bottom: 3px;
-    width: 250px;
-}
-
-.StatusCheckHint {
-    float: left;
-}
-
-.StatusCheck_after {
-    display: none;
-}
-
-.StatusCheck_false {
-    background-image: url("../images/warning.png");
-    background-repeat: no-repeat;
-    margin-top: 1px;
-    width: 12px;
-    height: 12px;
-    display: block;
-    float: left;
-    margin-right: 3px;
-}
-
-.StatusCheck_true {
-    background-color: white;
-    padding-top: 0;
-    width: 12px;
-    height: 12px;
-    display: block;
-    display: none;
 }

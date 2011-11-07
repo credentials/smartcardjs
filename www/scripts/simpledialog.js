@@ -23,6 +23,7 @@ function SimpleDialog() {
 		$("#simpleDialog").dialog({
 			modal : true,
 			resizable : false,
+			draggable : false,
 			position : this.position,
 			width : this.width,
 			buttons : this.loadButtons(),

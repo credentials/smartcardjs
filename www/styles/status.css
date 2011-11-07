@@ -1,0 +1,45 @@
+@CHARSET "UTF-8";
+
+.StatusCheck_description {
+    margin-bottom: 10px;
+}
+
+#StatusCheckItems {
+    height: 100px;
+    margin-bottom: 10px;
+}
+
+.StatusCheckItem {
+    clear: both;
+    float: left;
+    margin-bottom: 3px;
+    width: 250px;
+}
+
+.StatusCheckHint {
+    float: left;
+}
+
+.StatusCheck_after {
+    display: none;
+}
+
+.StatusCheck_false {
+    background-image: url("../images/warning.png");
+    background-repeat: no-repeat;
+    margin-top: 1px;
+    width: 12px;
+    height: 12px;
+    display: block;
+    float: left;
+    margin-right: 3px;
+}
+
+.StatusCheck_true {
+    background-color: white;
+    padding-top: 0;
+    width: 12px;
+    height: 12px;
+    display: block;
+    display: none;
+}

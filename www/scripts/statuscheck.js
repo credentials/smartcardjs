@@ -3,8 +3,26 @@ function StatusCheck() {
 		return StatusCheck.instance;
 	}
 	StatusCheck.instance = this;
-	var self = this, view = null, d, e;
-	this.prepareLogin = function() {
+	
+	var text = {
+		title : 'Notice',
+		description : 'In order to use your DEMO card, the following conditions must be met:',
+		plugin_check : 'Java plug-in installed',
+		plugin_hint : '<a target="_blank" href="http://www.java.com/getjava/" onclick="javascript:SmartCardJS.installJava();">Get Java &nbsp; <img src="images/arrow.png" /></a>',
+		applet_check : 'Java applet loaded',
+		applet_hint : '<a target="_blank" href="http://smartcardjs.org/faq">Help &amp; FAQ &nbsp; <img src="images/arrow.png" /></a>',
+		reader_check : 'Card reader connected',
+		reader_hint : '<a target="_blank" href="http://smartcardjs.org/faq">Help &amp; FAQ &nbsp; <img src="images/arrow.png" /></a>',
+		card_check : 'Smart card present',
+		card_hint : '<a target="_blank" href="http://smartcardjs.org/faq">Help &amp; FAQ &nbsp; <img src="images/arrow.png" /></a>',
+		application_check : 'DEMO card detected',
+		application_hint : '<a target="_blank" href="http://smartcardjs.org/faq">Help &amp; FAQ &nbsp; <img src="images/arrow.png" /></a>'
+	};
+	
+	var self = this, dialog = null, callback;
+	
+	this.prepareLogin = function(user_text) {
+		$.extend(text, user_text);
 		self.showDialog();
 		self.bindLoginEvents();
 		self.resetApplet()
@@ -20,54 +38,45 @@ function StatusCheck() {
 		self.resetApplet()
 	};
 	this.showDialog = function() {
-		view = new StatusCheckView;
-		view.showDialog()
+		dialog = new StatusCheckDialog;
+		dialog.showDialog(text)
 	};
-	this.bindEventsWithCallback = function(l, m) {
+	this.bindEventsWithCallback = function(l) {
 		SmartCardJS.disableEvents();
 		self.unbindLoginEvents();
 		self.bindStatusEvents();
-		d = l;
-		e = m;
+		callback = l;
 		self.unbindEventsWithCallback();
-		$(SmartCardJS).bind("owokLightCardWasInserted", d);
-		$(SmartCardJS).bind("owokSmartcardWasInserted", e)
+		$(SmartCardJS).bind("owokSmartcardWasInserted", callback)
 	};
 	this.unbindEventsWithCallback = function() {
-		$(SmartCardJS).unbind("owokLightCardWasInserted", d);
-		$(SmartCardJS).unbind("owokSmartcardWasInserted", e)
+		$(SmartCardJS).unbind("owokSmartcardWasInserted", callback)
 	};
 	this.bindLoginEvents = function() {
 		SmartCardJS.disableEvents();
 		self.unbindLoginEvents();
 		self.bindStatusEvents();
-		$(SmartCardJS).bind("owokLightCardWasInserted", self.executeLoginWithOwokLight);
 		$(SmartCardJS).bind("owokSmartcardWasInserted", self.executeLoginWithOwok)
 	};
 	this.bindAddCardEvents = function() {
 		SmartCardJS.disableEvents();
 		self.unbindAddCardEvents();
 		self.bindStatusEvents();
-		$(SmartCardJS).bind("owokLightCardWasInserted", self.executeAddCardOwokLight);
 		$(SmartCardJS).bind("owokSmartcardWasInserted", self.executeAddCardOwok)
 	};
 	this.bindDisconnectCardEvents = function() {
 		SmartCardJS.disableEvents();
 		self.unbindDisconnectCardEvents();
 		self.bindStatusEvents();
-		$(SmartCardJS).bind("owokLightCardWasInserted", self.executeDisconnectCardOwokLight);
 		$(SmartCardJS).bind("owokSmartcardWasInserted",	self.executeDisconnectCardOwok)
 	};
 	this.unbindLoginEvents = function() {
-		$(SmartCardJS).unbind("owokLightCardWasInserted", self.executeLoginWithOwokLight);
 		$(SmartCardJS).unbind("owokSmartcardWasInserted", self.executeLoginWithOwok)
 	};
 	this.unbindAddCardEvents = function() {
-		$(SmartCardJS).unbind("owokLightCardWasInserted", self.executeAddCardOwokLight);
 		$(SmartCardJS).unbind("owokSmartcardWasInserted", self.executeAddCardOwok)
 	};
 	this.unbindDisconnectCardEvents = function() {
-		$(SmartCardJS).unbind("owokLightCardWasInserted", self.executeDisconnectCardOwokLight);
 		$(SmartCardJS).unbind("owokSmartcardWasInserted", self.executeDisconnectCardOwok)
 	};
 	this.bindStatusEvents = function() {
@@ -106,68 +115,8 @@ function StatusCheck() {
 	this.restartApplet = function() {
 		SmartCardJS.restart({})
 	};
-	this.executeSomethingWithOwokLight = function(l, m, p, v) {
-		self.showStatusLoginCardPresentTrue();
-		if (v == SmartCardJS.CARD_STATUS_FACTORY)
-			l.notInitalized();
-		else if (v == SmartCardJS.CARD_STATUS_READY)
-			l.notRegistered();
-		else
-			v == SmartCardJS.CARD_STATUS_INITIALIZED && l.ready()
-	};
-	this.executeLoginWithOwokLight = function(l, m, p, v) {
-		var y = function() {
-			(new StatusCheck).prepareLogin()
-		}, A = {};
-		A.notInitalized = function() {
-			self.showStatusLoginCardInitialisedFalse(true, y)
-		};
-		A.notRegistered = function() {
-			self.closeDialog();
-			account.showRegisterDialogOwokLight(y)
-		};
-		A.ready = function() {
-			self.closeDialog();
-			SmartCardJS.showModalLightLogin(v, y)
-		};
-		self.executeSomethingWithOwokLight(A, l, m, p, v)
-	};
 	var f = function() {
 		(new AllyveEvents).raiseEvent("addCardCancelled")
-	};
-	this.executeAddCardOwokLight = function(l, m, p, v) {
-		var y = function() {
-			(new StatusCheck).prepareCardAdd()
-		}, A = {};
-		A.notInitalized = function() {
-			self.showStatusLoginCardInitialisedFalse(true, y)
-		};
-		A.notRegistered = function() {
-			self.closeDialog();
-			(new AddCardToAccount).showForm(y)
-		};
-		A.ready = function() {
-			self.closeDialog();
-			showAlertOk(allyve.mandant.msgCardAlreadyRegistered(), null, f)
-		};
-		self.executeSomethingWithOwokLight(A, l, m, p, v)
-	};
-	this.executeDisconnectCardOwokLight = function(l, m, p, v) {
-		var y = function() {
-			(new StatusCheck).prepareCardDisconnect()
-		}, A = {};
-		A.notInitalized = function() {
-			self.showStatusLoginCardInitialisedFalse(true, y)
-		};
-		A.notRegistered = function() {
-			self.closeDialog();
-			showAlertOk(allyve.mandant.msgCardNotInUse())
-		};
-		A.ready = function() {
-			self.closeDialog();
-			(new ConfirmCardDeactivation).showPinForm(y)
-		};
-		self.executeSomethingWithOwokLight(A, l, m, p, v)
 	};
 	this.executeSomethingWithOwok = function(l, m, p, v) {
 		if (v == SmartCardJS.CARD_STATUS_FACTORY
@@ -245,7 +194,7 @@ function StatusCheck() {
 		showAlertOk(allyve.mandant.msgCardPluginBlocked(), allyve.mandant.headerAchtung())
 	};
 	this.closeDialog = function() {
-		view.close()
+		dialog.close()
 	};
 	this.onClose = function() {
 		self.unbindStatusEvents();
@@ -316,12 +265,18 @@ function StatusCheck() {
 		$("#StatusCheck_after_5").hide()
 	}
 };
-function StatusCheckView() {
-	this.showDialog = function() {
+function StatusCheckDialog() {
+	this.showDialog = function(text) {
 		this.setWidth(430);
-		//this.show('initialise');
-		//this.showTemplate('\t<div class="modalHeader">Hinweis</div><div class="StatusCheck_description">Um diese Aktion mit der login<span class="kursiv">Card</span> ausf\u00fchren zu k\u00f6nnen,<br>m\u00fcssen folgende Bedingungen erf\u00fcllt sein:</div><div id="StatusCheckItems" class="StatusCheck_content"><div id="StatusCheck_1" class="StatusCheckItem"><span id="StatusCheck_1_false" class="StatusCheck_false"><img id="StatusCheck_1_true" class="StatusCheck_true" src="images/check.png" /></span> Java Plugin installed</div><div id="StatusCheck_hint_1" class="StatusCheckHint"><a target="_blank" href="http://www.reiner-sct.com/cardlogin">Zum Plugin &nbsp; <img src="images/arrow.png" /></a></div><div id="StatusCheck_after_1" class="StatusCheck_after"><div id="StatusCheck_2" class="StatusCheckItem"><span id="StatusCheck_2_false" class="StatusCheck_false"><img id="StatusCheck_2_true" class="StatusCheck_true" src="images/check.png" /></span> Angeschlossener Kartenleser</div><div id="StatusCheck_hint_2" class="StatusCheckHint"><a target="_blank" href="http://blog.allyve.com/faq">Hilfe & FAQ &nbsp; <img src="images/arrow.png" /></a></div><div id="StatusCheck_after_2" class="StatusCheck_after"><div id="StatusCheck_3" class="StatusCheckItem"><span id="StatusCheck_3_false" class="StatusCheck_false"><img id="StatusCheck_3_true" class="StatusCheck_true" src="images/check.png" /></span> Zugriff auf den Kartenleser</div><div id="StatusCheck_hint_3" class="StatusCheckHint"><a target="_blank" href="http://blog.allyve.com/faq">Hilfe & FAQ &nbsp; <img src="images/arrow.png" /></a></div><div id="StatusCheck_after_3" class="StatusCheck_after"><div id="StatusCheck_4" class="StatusCheckItem"><span id="StatusCheck_4_false" class="StatusCheck_false"><img id="StatusCheck_4_true" class="StatusCheck_true" src="images/check.png" /></span> Aufgelegte login<span class="kursiv">Card</span></div><div id="StatusCheck_hint_4" class="StatusCheckHint"><a target="_blank" href="http://blog.allyve.com/faq">Hilfe & FAQ &nbsp; <img src="images/arrow.png" /></a></div><div id="StatusCheck_after_4" class="StatusCheck_after"><div id="StatusCheck_5" class="StatusCheckItem"><span id="StatusCheck_5_false" class="StatusCheck_false"><img id="StatusCheck_5_true" class="StatusCheck_true" src="images/check.png" /></span> Initialisierte login<span class="kursiv">Card</span></div><div id="StatusCheck_hint_5" class="StatusCheckHint"><a target="_blank" href="http://blog.allyve.com/faq">Hilfe & FAQ &nbsp; <img src="images/arrow.png" /></a></div><div id="StatusCheck_after_5" class="StatusCheck_after"></div></div></div></div></div></div>')
-		this.showTemplate('<div class="modalHeader">Notice</div><div class="StatusCheck_description">	In order to use your ... card, the following conditions must be met:</div><div id="StatusCheckItems" class="StatusCheck_content">	<div id="StatusCheck_1" class="StatusCheckItem">		<span id="StatusCheck_1_false" class="StatusCheck_false"><img	id="StatusCheck_1_true" class="StatusCheck_true" src="images/check.png" /></span> 		Java plug-in installed	</div>	<div id="StatusCheck_hint_1" class="StatusCheckHint">		<a target="_blank" href="http://www.java.com/getjava/" onclick="javascript:SmartCardJS.installJava();">		  Get Java &nbsp; <img src="images/arrow.png" />		</a>	</div>	<div id="StatusCheck_after_1" class="StatusCheck_after">		<div id="StatusCheck_2" class="StatusCheckItem">			<span id="StatusCheck_2_false" class="StatusCheck_false"><img id="StatusCheck_2_true" class="StatusCheck_true" src="images/check.png" /></span> 			Java applet loaded		</div>		<div id="StatusCheck_hint_2" class="StatusCheckHint">			<a target="_blank" href="http://blog.allyve.com/faq">			  Help &amp; FAQ &nbsp; <img src="images/arrow.png" />			</a>		</div>		<div id="StatusCheck_after_2" class="StatusCheck_after">			<div id="StatusCheck_3" class="StatusCheckItem">				<span id="StatusCheck_3_false" class="StatusCheck_false"><img	id="StatusCheck_3_true" class="StatusCheck_true" src="images/check.png" /></span>				Card reader connected			</div>			<div id="StatusCheck_hint_3" class="StatusCheckHint">				<a target="_blank" href="http://blog.allyve.com/faq">				  Help &amp; FAQ &nbsp; <img src="images/arrow.png" />				</a>			</div>			<div id="StatusCheck_after_3" class="StatusCheck_after">				<div id="StatusCheck_4" class="StatusCheckItem">					<span id="StatusCheck_4_false" class="StatusCheck_false"><img	id="StatusCheck_4_true" class="StatusCheck_true" src="images/check.png" /></span>					  Smart card present				</div>				<div id="StatusCheck_hint_4" class="StatusCheckHint">					<a target="_blank" href="http://blog.allyve.com/faq">					  Help &amp;	FAQ &nbsp; <img src="images/arrow.png" />					</a>				</div>				<div id="StatusCheck_after_4" class="StatusCheck_after">					<div id="StatusCheck_5" class="StatusCheckItem">						<span id="StatusCheck_5_false" class="StatusCheck_false"><img	id="StatusCheck_5_true" class="StatusCheck_true" src="images/check.png" /></span>					  ... card detected					</div>					<div id="StatusCheck_hint_5" class="StatusCheckHint">						<a target="_blank" href="http://blog.allyve.com/faq">						  Help &amp; FAQ &nbsp; <img src="images/arrow.png" />						</a>					</div>					<div id="StatusCheck_after_5" class="StatusCheck_after"></div>				</div>			</div>		</div>	</div></div>');
+		var t = '<div class="modalHeader">' + text.title + '</div><div class="StatusCheck_description">' + text.description + '</div>';
+		t += '<div id="StatusCheckItems" class="StatusCheck_content">';
+		t += '<div id="StatusCheck_1" class="StatusCheckItem"><span id="StatusCheck_1_false" class="StatusCheck_false"><img id="StatusCheck_1_true" class="StatusCheck_true" src="images/check.png" /></span>' + text.plugin_check + '</div><div id="StatusCheck_hint_1" class="StatusCheckHint">' + text.plugin_hint + '</div><div id="StatusCheck_after_1" class="StatusCheck_after">';
+		t += '<div id="StatusCheck_2" class="StatusCheckItem"><span id="StatusCheck_2_false" class="StatusCheck_false"><img id="StatusCheck_2_true" class="StatusCheck_true" src="images/check.png" /></span>' + text.applet_check + '</div><div id="StatusCheck_hint_2" class="StatusCheckHint">' + text.applet_hint + '</div><div id="StatusCheck_after_2" class="StatusCheck_after">';
+		t += '<div id="StatusCheck_3" class="StatusCheckItem"><span id="StatusCheck_3_false" class="StatusCheck_false"><img	id="StatusCheck_3_true" class="StatusCheck_true" src="images/check.png" /></span>' + text.reader_check + '</div><div id="StatusCheck_hint_3" class="StatusCheckHint">' + text.reader_hint + '</div><div id="StatusCheck_after_3" class="StatusCheck_after">';
+		t += '<div id="StatusCheck_4" class="StatusCheckItem"><span id="StatusCheck_4_false" class="StatusCheck_false"><img	id="StatusCheck_4_true" class="StatusCheck_true" src="images/check.png" /></span>' + text.card_check + '</div><div id="StatusCheck_hint_4" class="StatusCheckHint">' + text.card_hint + '</div><div id="StatusCheck_after_4" class="StatusCheck_after">';
+		t += '<div id="StatusCheck_5" class="StatusCheckItem"><span id="StatusCheck_5_false" class="StatusCheck_false"><img	id="StatusCheck_5_true" class="StatusCheck_true" src="images/check.png" /></span>' + text.application_check + '</div><div id="StatusCheck_hint_5" class="StatusCheckHint">' + text.application_hint + '</div><div id="StatusCheck_after_5" class="StatusCheck_after">';
+		t += '</div></div></div></div></div></div>';
+		this.showTemplate(t);
 	};
 	this.onClose = function() {
 		$(StatusCheck).trigger("closeButtonPressed")
@@ -329,5 +284,5 @@ function StatusCheckView() {
 	this.loadButtons = function() {
 	}
 }
-StatusCheckView.prototype = new SimpleDialog;
-StatusCheckView.constructor = StatusCheckView;
+StatusCheckDialog.prototype = new SimpleDialog;
+StatusCheckDialog.constructor = StatusCheckDialog;
