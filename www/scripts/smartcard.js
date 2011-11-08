@@ -377,7 +377,7 @@ var SmartCardJS = (function() {
             // Create applet HTML and include in the document
             if($("#SmartCardJS").length==0) {
             	// Check whether there is a Java plugin available
-            	if (deployJava.versionCheck(options.minimumVersion + '+')) {
+            	if (AppletJS.checkVersion(options.minimumVersion)) {
             		$(SmartCardJS).trigger('pluginFound');
             		
                     var html_plugin_element = this.createHTMLPluginObject();
