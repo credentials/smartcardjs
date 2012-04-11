@@ -221,7 +221,7 @@ public class GlobalPlatformService implements ISO7816, APDUListener<CommandAPDU,
 
     public void notifyExchangedAPDU(CommandAPDU c, ResponseAPDU r) {
         for (APDUListener<CommandAPDU,ResponseAPDU> l : apduListeners) {
-            l.exchangedAPDU(new APDUEvent<CommandAPDU,ResponseAPDU>(this, c, r));
+            l.exchangedAPDU(new APDUEvent<CommandAPDU,ResponseAPDU>(this, null, 0, c, r));
         }
     }
 

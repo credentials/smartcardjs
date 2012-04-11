@@ -64,7 +64,7 @@ public abstract class CardService<C,R> implements Serializable
 	 * @param l the listener to add
 	 */
 	public void addAPDUListener(APDUListener<C,R> l) {
-		apduListeners.add(l);
+		if (apduListeners != null) { apduListeners.add(l); }
 	}
 
 	/**
@@ -73,7 +73,7 @@ public abstract class CardService<C,R> implements Serializable
 	 * @param l the listener to remove
 	 */
 	public void removeAPDUListener(APDUListener<C,R> l) {
-		apduListeners.remove(l);
+		if (apduListeners != null) { apduListeners.remove(l); }
 	}
 
 	/**
@@ -122,9 +122,9 @@ public abstract class CardService<C,R> implements Serializable
 	 * 
 	 * @param capdu APDU event
 	 */
-	protected void notifyExchangedAPDU(C capdu, R rapdu) {
+	protected void notifyExchangedAPDU(int count, C capdu, R rapdu) {
 		for (APDUListener<C,R> listener: apduListeners) {
-			listener.exchangedAPDU(new APDUEvent<C,R>(this, capdu, rapdu));
+			listener.exchangedAPDU(new APDUEvent<C,R>(this, "RAW", count, capdu, rapdu));
 		}
 	}
 }
